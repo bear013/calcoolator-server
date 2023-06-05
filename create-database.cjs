@@ -1,3 +1,4 @@
+require('dotenv').config();
 const sqlite3 = require('sqlite3').verbose();
 
 let db = new sqlite3.Database('./db/calculator.db', (err) => {
@@ -10,7 +11,10 @@ let db = new sqlite3.Database('./db/calculator.db', (err) => {
 	id INT PRIMARY KEY,
    	username VARCHAR(256) NOT NULL,
 	password VARCHAR(256) NOT NULL,
-	status int NOT NULL
+	balance int NOT NULL,
+	status int NOT NULL,
+	token VARCHAR(2048),
+	token_expires DATETIME
   )`);
 
   db.run(`CREATE TABLE IF NOT EXISTS operations (
@@ -19,13 +23,18 @@ let db = new sqlite3.Database('./db/calculator.db', (err) => {
 	cost INT NOT NULL
   )`);
   
-  db.run(`INSERT OR IGNORE INTO operations(id, type,cost) 
-			VALUES(1, 'addition',1),
-				(2, 'subtraction',2),
-				(3, 'multiplication', 3),
-				(4, 'division', 4),
-				(5, 'square_root', 10),
-				(6, 'random_string', 30)`);  
+//  db.run(`INSERT OR IGNORE INTO operations(id, type,cost) 
+//			VALUES(1, 'addition',1),
+//				(2, 'subtraction',2),
+//				(3, 'multiplication', 3),
+//				(4, 'division', 4),
+//				(5, 'square_root', 10),
+//				(6, 'random_string', 30)`);  
+//				
+  db.run(`INSERT OR IGNORE INTO users(id, username,password,balance,status) 
+			VALUES(1, 'pepesilvia','carolhr',200,1)`);  
+
+  
 
   db.run(`CREATE TABLE IF NOT EXISTS records (
 	id INT PRIMARY KEY,
@@ -34,7 +43,8 @@ let db = new sqlite3.Database('./db/calculator.db', (err) => {
 	amount INT NOT NULL,
 	user_balance INT NOT NULL,
 	operation_response VARCHAR(256) NOT NULL,
-	operation_date DATETIME NOT NULL
+	operation_date DATETIME NOT NULL,
+	active INT NOT NULL
   )`);
 
   console.log('All OK.');

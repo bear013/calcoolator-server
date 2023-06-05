@@ -1,7 +1,11 @@
 const path = require('path');
 const express = require('express');
+const jwt = require('jsonwebtoken');
 const app = express()
 const port = 8099
+require('dotenv').config();
+
+const sqlite3 = require('sqlite3').verbose();
 
 const fs = require('node:fs')
 
@@ -40,50 +44,122 @@ function delay(ms) {
  
 app.use(express.static(path.resolve(__dirname, '/client/public')));
 
+app.post('/auth/v1/login/', function (req, res) {
+	var username = req.body.username;
+	var password = req.body.password;
+	
+	var loginSuccessful = false;
+	
+	let db = new sqlite3.Database('./db/calculator.db');
+	
+	let sql = `SELECT balance,status FROM users where username='${username}' and password='${password}'`;
+
+	console.log(sql)
+
+	db.all(sql, [], (err, rows) => {
+		if (err) {
+			throw err;
+		}
+			rows.forEach((row) => {
+			loginSuccessful = true;
+			console.log(row.balance);
+		});
+	  
+		if (loginSuccessful) {
+			const token = jwt.sign(
+			  { user_id: username },
+			  process.env.TOKEN_KEY,
+			  {
+				expiresIn: "2h",
+			  }
+			);
+			
+			db.run(`UPDATE users SET token = '${token}' where username='${username}' and password='${password}'`);
+			
+			res.status(200);
+			res.json({"resultCode":"0","result":"OK","token":token,"balance":200});
+		} else {
+			res.status(403);
+			res.json({"resultCode":"-2","result":"CANNOT AUTHENTICATE","token":"","balance":0});
+		}	  
+	  
+	});
+
+	// close the database connection
+	db.close();
+	
+
+});
+
 app.post('/calculator/operations/:operation', function (req, res) {
 	try {
 	  console.log(req.body);
 	  console.log(req.get('content-type'));
-	  var firstOperand = req.body.firstOperand;
-	  var secondOperand = req.body.secondOperand;
-	  console.log('before');
-	  if (req.params.operation == 'addition') {
-	    console.log('addition');
-	    var opResult = parseFloat(firstOperand) + parseFloat(secondOperand);
-		res.json({"result":"OK","value":opResult});
-	  }
-	  else if (req.params.operation == 'subtraction') {
-	    console.log('subtraction');
-	    var opResult = parseFloat(firstOperand) - parseFloat(secondOperand);
-		res.json({"result":"OK","value":opResult});
-	  }
-	  else if (req.params.operation == 'multiplication') {
-	    console.log('multiplication');
-	    var opResult = parseFloat(firstOperand) * parseFloat(secondOperand);
-		res.json({"result":"OK","value":opResult});
-	  }
-	  else if (req.params.operation == 'division') {
-	    console.log('division');
-	    var opResult = parseFloat(firstOperand) / parseFloat(secondOperand);
-		res.json({"result":"OK","value":opResult});
-	  }
-	  //if (req.params.operation == 'squareroot') {
-	  //  console.log('squareroot');
-	  //  var opResult = parseFloat(firstOperand) + parseFloat(secondOperand);
-		//res.json({"result":"OK","value":opResult});
-	  //}
-	  //if (req.params.operation == 'randomstring') {
-	  //  console.log('randomstring');
-	  //  var opResult = parseFloat(firstOperand) + parseFloat(secondOperand);
-		//res.json({"result":"OK","value":opResult});
-	  //}
+	  
+	  var token = req.get('x-access-token');
+	  console.log(token);
+	  
+	var validToken = false;
+	
+	let db = new sqlite3.Database('./db/calculator.db');
+	
+	let sql = `SELECT count(*) as valid_token FROM users where token='${token}'`;
 
-	  else {
-	    res.json({"result":"Operation not supported","value":opResult});
-	  }
+	console.log(sql)
+
+	db.all(sql, [], (err, rows) => {
+		if (err) {
+			throw err;
+		}
+			rows.forEach((row) => {
+			if (row.valid_token == '1') 
+				validToken = true;
+			console.log(row.valid_token);
+		});
+	  
+		if (validToken) {
+			  var firstOperand = req.body.firstOperand;
+			  var secondOperand = req.body.secondOperand;
+			  console.log('before');
+			  if (req.params.operation == 'addition') {
+				console.log('addition');
+				var opResult = parseFloat(firstOperand) + parseFloat(secondOperand);
+				res.json({"resultCode":"0","value":opResult});
+			  }
+			  else if (req.params.operation == 'subtraction') {
+				console.log('subtraction');
+				var opResult = parseFloat(firstOperand) - parseFloat(secondOperand);
+				res.json({"resultCode":"0","value":opResult});
+			  }
+			  else if (req.params.operation == 'multiplication') {
+				console.log('multiplication');
+				var opResult = parseFloat(firstOperand) * parseFloat(secondOperand);
+				res.json({"resultCode":"0","value":opResult});
+			  }
+			  else if (req.params.operation == 'division') {
+				console.log('division');
+				var opResult = parseFloat(firstOperand) / parseFloat(secondOperand);
+				res.json({"resultCode":"0","value":opResult});
+			  }
+			  else {
+				res.status(401);
+				res.json({"resultCode":"-10","result":"Operation not supported","value":opResult});
+			  }
+		} else {
+			res.status(403);
+			res.json({"resultCode":"-2","result":"INVALID TOKEN","token":"","balance":0});
+		}	  
+	  
+	});
+
+	// close the database connection
+	db.close();	  
+	  
+
 		
 	} catch (err) {
-	  res.json({"result":"-15","message":"internal error"})
+	  res.status(500);
+	  res.json({"resultCode":"-15","result":"internal error"})
 	}
 })
 
