@@ -1,9 +1,10 @@
 {
   "dependencies": {
+    "dotenv": "latest",
     "express": "^4.18.2",
-    "sqlite3": "^5.1.6",
-	"dotenv" : "latest",
-	"jsonwebtoken" : "latest"
+    "jsonwebtoken": "latest",
+    "sqlite": "^4.2.1",
+    "sqlite3": "^5.1.6"
   },
   "type": "module",
   "scripts": {
