@@ -7,7 +7,7 @@ require('dotenv').config();
 
 const sqlite3 = require('sqlite3').verbose();
 
-const sqlite = require('sqlite');
+//const sqlite = require('sqlite');
 
 const fs = require('node:fs')
 
@@ -22,7 +22,7 @@ app.use(function (req, res, next) {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
 
     // Request headers you wish to allow
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type,x-access-token');
 
     // Set to true if you need the website to include cookies in the requests sent
     // to the API (e.g. in case you use sessions)
@@ -46,50 +46,28 @@ function delay(ms) {
  
 app.use(express.static(path.resolve(__dirname, '/client/public')));
 
-app.post('/auth/v1/list/', function (req, res) {	
-	var username = req.body.username;
-	var password = req.body.password;
-	
-	var loginSuccessful = false;
-	
-	//let db = new sqlite.Database('./db/calculator.db');
-	
-
-	
-	let sql = `SELECT balance,status FROM users`;
-
-	console.log(sql)
-	
-	const dbParams = {
-		filename: './db/calculator.db',
-		driver: sqlite3.Database
-	}
-	
-	sqlite.open(dbParams)
-	.then( db => db.get(sql))
-	.then(row => console.log(row))
-	.then(console.log('OK login outside'))
-	.then(res.status(200).json({"resultCode":"0","result":"OK","token":"test","balance":200}))
-	
-	
-	//all(sql).then(rows => console.log(rows))
-		
-	//rows.forEach((row) => {
-	//	loginSuccessful = true;
-	//	console.log(row);
-	//});
-	
-	//if (loginSuccessful)
-	//	console.log('OK login outside')
-		
-	//res.status(200);
-	//res.json({"resultCode":"0","result":"OK","token":"test","balance":200});	
-
-	// close the database connection
-	//db.close();
-	
-
-});
+//app.post('/auth/v1/list/', function (req, res) {	
+//	var username = req.body.username;
+//	var password = req.body.password;
+//	
+//	var loginSuccessful = false;
+//	
+//	let sql = `SELECT balance,status FROM users`;
+//
+//	console.log(sql)
+//	
+//	const dbParams = {
+//		filename: './db/calculator.db',
+//		driver: sqlite3.Database
+//	}
+//	
+//	sqlite.open(dbParams)
+//	.then( db => db.get(sql))
+//	.then(row => console.log(row))
+//	.then(console.log('OK login outside'))
+//	.then(res.status(200).json({"resultCode":"0","result":"OK","token":"test","balance":200}))
+//
+//});
 
 app.post('/auth/v2/login/', function (req, res) {	
 	var username = req.body.username;
@@ -120,16 +98,12 @@ app.post('/auth/v2/login/', function (req, res) {
 			
 			//db.run(`UPDATE users SET token = '${token}' where username='${username}' and password='${password}'`);
 			
-			res.status(200).json({"resultCode":"0","result":"OK","token":token,"balance":200});
+			res.status(200).json({"resultCode":"0","result":"OK","token":token,"balance":row.balance});
 		} else {
 			res.status(403).json({"resultCode":"-2","result":"CANNOT AUTHENTICATE","token":"","balance":0});
 		}	  
 	  
 	}).close();
-
-	// close the database connection
-	//db.close();
-	
 
 });
 
@@ -166,7 +140,7 @@ app.post('/auth/v1/login/', function (req, res) {
 			db.run(`UPDATE users SET token = '${token}' where username='${username}' and password='${password}'`);
 			
 			res.status(200);
-			res.json({"resultCode":"0","result":"OK","token":token,"balance":200});
+			res.json({"resultCode":"0","result":"OK","token":token,"balance":row.balance});
 		} else {
 			res.status(403);
 			res.json({"resultCode":"-2","result":"CANNOT AUTHENTICATE","token":"","balance":0});
@@ -174,21 +148,10 @@ app.post('/auth/v1/login/', function (req, res) {
 	  
 	});
 
-	// close the database connection
 	db.close();
 	
 
 });
-
-//app.post('/calculator/operationsnew/:operation', function (req, res) {
-//		
-//	Auth.checkToken()
-//		.then(Calc.validateInput)
-//		.then(Calc.executeOperation)
-//		.catch (e) {
-//			res.json({"resultCode":"-10","result","value":opResult})
-//		}
-//});
 
 function addition(firstOperand,secondOperand){
 	var opResult = parseFloat(firstOperand) + parseFloat(secondOperand);
@@ -212,13 +175,26 @@ function division(firstOperand,secondOperand){
 
 const operationMap = {'addition':addition,'subtraction':subtraction,'multiplication':multiplication,'division':division};
 
+function selectOneRow(database, query, params) {
+	console.log(query)
+    return new Promise((resolve, reject) => {
+        database.get(query, params, (err, row) => {
+            if (err) {
+                reject(err); 
+            } else {
+				resolve(row);
+            }
+        });
+    });
+}
+
 app.post('/calculator/operations/:operation', function (req, res) {
 	try {		
-	  console.log(req.body);
-	  console.log(req.get('content-type'));
+	console.log(req.body);
+	console.log(req.get('content-type'));
 	  
-	  var token = req.get('x-access-token');
-	  console.log(token);
+	var token = req.get('x-access-token');
+	console.log(token);
 	  
 	var validToken = false;
 	
@@ -226,16 +202,14 @@ app.post('/calculator/operations/:operation', function (req, res) {
 	console.log(decodedUsername)
 	
 	let db = new sqlite3.Database('./db/calculator.db');
-	
-	let sql = `SELECT balance FROM users where username='${decodedUsername.user_id}'`;
 
-	console.log(sql)
+	let sql = `SELECT balance FROM users where users.username = ?`;
 
-	db.get(sql, [], (err, row) => {
-		if (err) {
-			throw err;
-		}
-		
+	var response = {}
+	var responseCode = {}
+
+	selectOneRow(db, sql, [decodedUsername.user_id])
+	.then(row => {
 		if (row !== undefined) {
 		  console.log(row.balance);
 		  var firstOperand = req.body.firstOperand;
@@ -243,42 +217,42 @@ app.post('/calculator/operations/:operation', function (req, res) {
 		  console.log(req.params.operation);
 		  
 		  if (operationMap[req.params.operation] == undefined) {
-			res.status(401).json({"resultCode":"-10","result":"Operation not supported","value":""});  
+			return res.status(401).json({"resultCode":"-10","result":"Operation not supported","value":""});  
 		  } else {
-			  var result = operationMap[req.params.operation](firstOperand,secondOperand);
-			  if (result.success){
-				  res.json({"resultCode":"0","result":"OK","value":result.opResult});		  
-			  } else {
-				  res.status(401).json({"resultCode":"-11","result":"There was an error executing the operation","value":""});
-			  }
+			  checkBalanceQuery = `select users.balance - operations.cost as new_balance from users,operations where users.username = '${decodedUsername.user_id}' and operations.type='${req.params.operation}'`;
+			  selectOneRow(db, checkBalanceQuery, [])
+			  .then(newBalance => {
+				  if (newBalance.new_balance >= 0) {
+					  var result = operationMap[req.params.operation](firstOperand,secondOperand);
+						if (result.success){
+						  db.run(`update users set balance = ${newBalance.new_balance}`);
+						  return res.status(200).json({"resultCode":"0","result":"OK","value":result.opResult,"balance":newBalance.new_balance});		  
+						} else {
+						  return res.status(401).json({"resultCode":"-11","result":"There was an error executing the operation","value":""});
+						}
+				  } else {
+					  return res.status(401).json({"resultCode":"-20","result":"The current balance is insufficient to execute the operation","value":"","newBalance":row.balance});
+				  }
+				  
+			  })
+			  
 		  }		
 		} else {
-			res.status(403).json({"resultCode":"-2","result":"INVALID TOKEN","token":"","balance":0});
-			
-		}  
-	  
+			return res.status(403).json({"resultCode":"-2","result":"INVALID TOKEN","token":"","balance":0});			
+		}
+	})
+	.catch(error => {
+		console.log(error)
+		return res.status(500).json({"resultCode":"-15","result":"internal error"})
 	});
 
-	// close the database connection
-	db.close();	  
-	  
-
+	console.log(sql)
 		
 	} catch (err) {
-	  res.status(500);
-	  res.json({"resultCode":"-15","result":"internal error"})
+	  res.status(500).json({"resultCode":"-15","result":"internal error"})
 	}
 })
 
-//app.get('/calculator/history/getOperations/:username/:operationType/:page', function (req, res) {
-//	try {
-//	  console.log(req.body);
-//	  res.json({"operations":[{"name":"addition","amount":"10"},{"user_balance":"990","operation_response":"Successful","date":"2023-05-31 12:03:01"},
-//	  {"name":"subtraction","amount":"5"},{"user_balance":"985","operation_response":"Successful","date":"2023-05-31 12:03:01"},]})
-//	} catch (err) {
-//	  res.json({"result":"-15","message":"getProduct error"})
-//	}
-//})
 
 app.get('*', (req, res) => {
   res.sendFile(path.resolve(__dirname, '/client/public', 'index.html'));
