@@ -145,68 +145,16 @@ app.post('/auth/v1/login/', function (req, res) {
 
 });
 
-function addition(firstOperand,secondOperand){
-	return new Promise((resolve, reject) => {
-		var opResult = ''
-		var opResult = parseFloat(firstOperand) + parseFloat(secondOperand);
-		resolve({success: true, opResult: opResult});		
-    });	
-}
-
-function subtraction(firstOperand,secondOperand){
-	return new Promise((resolve, reject) => {
-		var opResult = ''
-		var opResult = parseFloat(firstOperand) - parseFloat(secondOperand);
-		resolve({success: true, opResult: opResult});		
-    });
-}
-
-function multiplication(firstOperand,secondOperand){
-	return new Promise((resolve, reject) => {
-		var opResult = ''
-		opResult = parseFloat(firstOperand) / parseFloat(secondOperand);
-		resolve({success: true, opResult: opResult});		
-    });
-}
-
-function division(firstOperand,secondOperand){
-	return new Promise((resolve, reject) => {
-		var opResult = ''
-		if (parseFloat(secondOperand) == 0)
-			reject({success: false, opResult: opResult})
-		else
-			opResult = parseFloat(firstOperand) / parseFloat(secondOperand);
-			resolve({success: true, opResult: opResult});		
-    });
-}
-
-function randomString(firstOperand, secondOperand) {
-    return new Promise((resolve, reject) => {
-		var opRes='';
-		calculator.getRandomNumber(randResult => 
-							{console.log(randResult); 
-							opRes = randResult[0][0];
-							resolve({success: true, opResult: opRes})},
-							rejResult => resolve({success: false, opResult: opRes}));
-    });
-}
-
-function squareRoot(firstOperand,secondOperand){	
-	return new Promise((resolve, reject) => {
-		var opResult = ''
-		opResult = Math.sqrt(parseFloat(firstOperand))
-		resolve({success: true, opResult: opResult});		
-    });	
-}
 
 
 
-const operationMap = {'addition':addition,
-						'subtraction':subtraction,
-						'multiplication':multiplication,
-						'division':division,
-						'random_string':randomString,
-						'square_root':squareRoot};
+
+const operationMap = {'addition':calculator.addition,
+						'subtraction':calculator.subtraction,
+						'multiplication':calculator.multiplication,
+						'division':calculator.division,
+						'random_string':calculator.randomString,
+						'square_root':calculator.squareRoot};
 
 function selectOneRow(database, query, params) {
 	console.log(query)
