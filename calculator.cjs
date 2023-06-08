@@ -1,6 +1,7 @@
 const sqlite3 = require('sqlite3').verbose();
 
 const jwt = require('jsonwebtoken');
+const random = require("./random.cjs");
 require('dotenv').config();
 
 module.exports = {
@@ -35,6 +36,26 @@ module.exports = {
 
 	db: new sqlite3.Database('./db/calculator.db'),
 
+	randomGenOptions:  {
+		secure: true, // Make the request secure
+		min: 0,     // Lower bound 0
+		max: 1000000000,      // Upper bound 10
+		col: 1,       // 1 column
+		base: 10,     // Use Base 10
+		rnd: "new" // Which set of random numbers to use
+	},
+
+
+		//function randomCallback(sequence){
+		//	// Prints entire sequence
+		//	console.log(sequence);
+		//}
+	getRandomNumber: function (){
+		return new Promise((resolve, reject) => {
+			random.generateIntegers(resolve,this.randomGenOptions);
+		});
+	},
+
 	getResponse: function (index,params){
 		//console.log(index)
 		//console.log(params)
@@ -49,6 +70,8 @@ module.exports = {
 			
 			console.log(req.query);
 			
+			//this.getRandomNumber().then(randResult => console.log(randResult))
+			
 			var token = req.get('x-access-token');
 			console.log(token);
 			
@@ -60,20 +83,25 @@ module.exports = {
 			var result = {}
 			var totalPages = 0;
 			
+			var untilDate = req.query.untilDate != '' ?  req.query.untilDate: '2030-01-01'
+			var fromDate = req.query.fromDate != '' ?  req.query.fromDate: '2023-01-01'
+			var maxAmount = req.query.maxAmount != '' ?  req.query.maxAmount: 9999999
+			var minAmount = req.query.minAmount != '' ?  req.query.minAmount: 0
+			
 			queryParams = [decodedUsername.user_id,
-							req.query.untilDate + ' 23:59:59',
-							req.query.fromDate + ' 00:00:00',
-							req.query.maxAmount,
-							req.query.minAmount,
+							untilDate + ' 23:59:59',
+							fromDate + ' 00:00:00',
+							maxAmount,
+							minAmount,
 							req.query.type,
 							req.query.type,
 							req.query.offset]
 							
 			countQueryParams = [decodedUsername.user_id,
-							req.query.untilDate + ' 23:59:59',
-							req.query.fromDate + ' 00:00:00',
-							req.query.maxAmount,
-							req.query.minAmount,
+							untilDate + ' 23:59:59',
+							fromDate + ' 00:00:00',
+							maxAmount,
+							minAmount,
 							req.query.type,
 							req.query.type]
 			

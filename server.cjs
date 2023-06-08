@@ -18,7 +18,7 @@ app.use(express.json());
 app.use(function (req, res, next) {
 
     res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type,x-access-token');
     res.setHeader('Access-Control-Allow-Credentials', true);
     next();
@@ -161,11 +161,47 @@ function multiplication(firstOperand,secondOperand){
 }
 
 function division(firstOperand,secondOperand){
+	
+	return new Promise((resolve, reject) => {
+		return calculator.getRandomNumber()
+    });
+	
+	//var opResult = parseFloat(firstOperand) / parseFloat(secondOperand);
 	var opResult = parseFloat(firstOperand) / parseFloat(secondOperand);
 	return {success: true, opResult: opResult};
 }
 
-const operationMap = {'addition':addition,'subtraction':subtraction,'multiplication':multiplication,'division':division};
+//function randomString(firstOperand,secondOperand){
+//	//var opResult = parseFloat(firstOperand) / parseFloat(secondOperand);
+//	var opResult = calculator.getRandomNumber()
+//	return {success: true, opResult: opResult};
+//}
+
+function randomString(firstOperand, secondOperand) {
+    return new Promise((resolve, reject) => {
+		var opResult='';
+		calculator.getRandomNumber()
+		.then(randResult => {console.log(randResult); opResult = randResult[0][0]})
+		.then(resolve({success: true, opResult: opResult}))
+		
+		//return calculator.getRandomNumber()
+    });
+}
+
+function squareRoot(firstOperand,secondOperand){
+	//var opResult = parseFloat(firstOperand) / parseFloat(secondOperand);
+	var opResult = Math.sqrt(parseFloat(firstOperand))
+	return {success: true, opResult: opResult};
+}
+
+
+
+const operationMap = {'addition':addition,
+						'subtraction':subtraction,
+						'multiplication':multiplication,
+						'division':division,
+						'random_string':randomString,
+						'square_root':squareRoot};
 
 function selectOneRow(database, query, params) {
 	console.log(query)
@@ -230,19 +266,18 @@ app.post('/calculator/v1/operations/:operation', function (req, res) {
 				  if (newBalance.new_balance >= 0) {
 					  var result = operationMap[req.params.operation](firstOperand,secondOperand);
 						if (result.success){
-						  //execStatement(db,`update users set balance = ${newBalance.new_balance}`);
 						  execStatement(db,`update users set balance = ?`,newBalance.new_balance)
-							execStatement(db,`insert into records (operation_id,user_id,amount,user_balance,operation_response,operation_date,active) 
-																select op.id as operation_id, 
-																u.id as user_id,
-																op.cost as amount,
-																u.balance as balance,
-																'OK' as operation_response,
-																datetime('now') as operation_date,
-																1 as active
-																from operations op, users u
-																where op.type = ?
-																and u.username = ?`,[decodedUsername.user_id,req.params.operation])
+						  execStatement(db,`insert into records (operation_id,user_id,amount,user_balance,operation_response,operation_date,active) 
+															select op.id as operation_id, 
+															u.id as user_id,
+															op.cost as amount,
+															u.balance as balance,
+															'OK' as operation_response,
+															datetime('now') as operation_date,
+															1 as active
+															from operations op, users u
+															where op.type = ?
+															and u.username = ?`,[req.params.operation,decodedUsername.user_id])
 							
 						  return res.status(200).json({"resultCode":"0","result":"OK","value":result.opResult,"balance":newBalance.new_balance});		  
 						} else {
