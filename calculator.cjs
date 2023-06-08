@@ -50,10 +50,14 @@ module.exports = {
 		//	// Prints entire sequence
 		//	console.log(sequence);
 		//}
-	getRandomNumber: function (){
-		return new Promise((resolve, reject) => {
-			random.generateIntegers(resolve,this.randomGenOptions);
-		});
+	//getRandomNumber: function (){
+	//	return new Promise((resolve, reject) => {
+	//		random.generateIntegers(resolve,this.randomGenOptions,reject);
+	//	});
+	//},
+	
+	getRandomNumber: function (resolve,reject){
+		random.generateIntegers(resolve,this.randomGenOptions,reject);
 	},
 
 	getResponse: function (index,params){

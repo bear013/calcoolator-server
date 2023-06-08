@@ -146,52 +146,57 @@ app.post('/auth/v1/login/', function (req, res) {
 });
 
 function addition(firstOperand,secondOperand){
-	var opResult = parseFloat(firstOperand) + parseFloat(secondOperand);
-	return {success: true, opResult: opResult};
+	return new Promise((resolve, reject) => {
+		var opResult = ''
+		var opResult = parseFloat(firstOperand) + parseFloat(secondOperand);
+		resolve({success: true, opResult: opResult});		
+    });	
 }
 
 function subtraction(firstOperand,secondOperand){
-	var opResult = parseFloat(firstOperand) - parseFloat(secondOperand);
-	return {success: true, opResult: opResult};
+	return new Promise((resolve, reject) => {
+		var opResult = ''
+		var opResult = parseFloat(firstOperand) - parseFloat(secondOperand);
+		resolve({success: true, opResult: opResult});		
+    });
 }
 
 function multiplication(firstOperand,secondOperand){
-	var opResult = parseFloat(firstOperand) * parseFloat(secondOperand);
-	return {success: true, opResult: opResult};
+	return new Promise((resolve, reject) => {
+		var opResult = ''
+		opResult = parseFloat(firstOperand) / parseFloat(secondOperand);
+		resolve({success: true, opResult: opResult});		
+    });
 }
 
 function division(firstOperand,secondOperand){
-	
 	return new Promise((resolve, reject) => {
-		return calculator.getRandomNumber()
+		var opResult = ''
+		if (parseFloat(secondOperand) == 0)
+			reject({success: false, opResult: opResult})
+		else
+			opResult = parseFloat(firstOperand) / parseFloat(secondOperand);
+			resolve({success: true, opResult: opResult});		
     });
-	
-	//var opResult = parseFloat(firstOperand) / parseFloat(secondOperand);
-	var opResult = parseFloat(firstOperand) / parseFloat(secondOperand);
-	return {success: true, opResult: opResult};
 }
-
-//function randomString(firstOperand,secondOperand){
-//	//var opResult = parseFloat(firstOperand) / parseFloat(secondOperand);
-//	var opResult = calculator.getRandomNumber()
-//	return {success: true, opResult: opResult};
-//}
 
 function randomString(firstOperand, secondOperand) {
     return new Promise((resolve, reject) => {
-		var opResult='';
-		calculator.getRandomNumber()
-		.then(randResult => {console.log(randResult); opResult = randResult[0][0]})
-		.then(resolve({success: true, opResult: opResult}))
-		
-		//return calculator.getRandomNumber()
+		var opRes='';
+		calculator.getRandomNumber(randResult => 
+							{console.log(randResult); 
+							opRes = randResult[0][0];
+							resolve({success: true, opResult: opRes})},
+							rejResult => resolve({success: false, opResult: opRes}));
     });
 }
 
-function squareRoot(firstOperand,secondOperand){
-	//var opResult = parseFloat(firstOperand) / parseFloat(secondOperand);
-	var opResult = Math.sqrt(parseFloat(firstOperand))
-	return {success: true, opResult: opResult};
+function squareRoot(firstOperand,secondOperand){	
+	return new Promise((resolve, reject) => {
+		var opResult = ''
+		opResult = Math.sqrt(parseFloat(firstOperand))
+		resolve({success: true, opResult: opResult});		
+    });	
 }
 
 
@@ -264,8 +269,8 @@ app.post('/calculator/v1/operations/:operation', function (req, res) {
 			  selectOneRow(db, checkBalanceQuery, [])
 			  .then(newBalance => {
 				  if (newBalance.new_balance >= 0) {
-					  var result = operationMap[req.params.operation](firstOperand,secondOperand);
-						if (result.success){
+					  operationMap[req.params.operation](firstOperand,secondOperand)
+					  .then(result => {console.log(result); if (result.success){
 						  execStatement(db,`update users set balance = ?`,newBalance.new_balance)
 						  execStatement(db,`insert into records (operation_id,user_id,amount,user_balance,operation_response,operation_date,active) 
 															select op.id as operation_id, 
@@ -282,7 +287,9 @@ app.post('/calculator/v1/operations/:operation', function (req, res) {
 						  return res.status(200).json({"resultCode":"0","result":"OK","value":result.opResult,"balance":newBalance.new_balance});		  
 						} else {
 						  return res.status(401).json({"resultCode":"-11","result":"There was an error executing the operation","value":""});
-						}
+					  }})
+					  //var result = operationMap[req.params.operation](firstOperand,secondOperand);
+						
 				  } else {
 					  return res.status(401).json({"resultCode":"-20","result":"The current balance is insufficient to execute the operation","value":"","newBalance":row.balance});
 				  }
