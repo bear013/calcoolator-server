@@ -3,13 +3,13 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const app = express()
 const port = 8099
+const calculator = require('./calculator.cjs')
 require('dotenv').config();
 
-const calculator = require('./calculator.cjs')
+const WebHostName = process.env.WEBHOSTNAME
+const WebHostPort = process.env.WEBHOSTPORT
 
 const sqlite3 = require('sqlite3').verbose();
-
-//const sqlite = require('sqlite');
 
 const fs = require('node:fs')
 
@@ -17,8 +17,9 @@ app.use(express.json());
 
 app.use(function (req, res, next) {
 
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
+    //res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+	res.setHeader('Access-Control-Allow-Origin', `http://${WebHostName}:${WebHostPort}`);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE');
     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type,x-access-token');
     res.setHeader('Access-Control-Allow-Credentials', true);
     next();
@@ -37,29 +38,6 @@ function delay(ms) {
 }
  
 app.use(express.static(path.resolve(__dirname, '/client/public')));
-
-//app.post('/auth/v1/list/', function (req, res) {	
-//	var username = req.body.username;
-//	var password = req.body.password;
-//	
-//	var loginSuccessful = false;
-//	
-//	let sql = `SELECT balance,status FROM users`;
-//
-//	console.log(sql)
-//	
-//	const dbParams = {
-//		filename: './db/calculator.db',
-//		driver: sqlite3.Database
-//	}
-//	
-//	sqlite.open(dbParams)
-//	.then( db => db.get(sql))
-//	.then(row => console.log(row))
-//	.then(console.log('OK login outside'))
-//	.then(res.status(200).json({"resultCode":"0","result":"OK","token":"test","balance":200}))
-//
-//});
 
 app.post('/auth/v2/login/', function (req, res) {	
 	var username = req.body.username;
@@ -144,10 +122,6 @@ app.post('/auth/v1/login/', function (req, res) {
 	
 
 });
-
-
-
-
 
 const operationMap = {'addition':calculator.addition,
 						'subtraction':calculator.subtraction,
@@ -264,13 +238,15 @@ app.post('/calculator/v1/operations/:operation', function (req, res) {
 
 
 app.get('/calculator/v1/history', function (req, res) {
-	calculator.getHistory(req).
-	then(result => {res.status(result.httpCode).json(result)})
-	
-	//res.status(500).json({"resultCode":"-15","result":"not implemented yet"})
-	
+	calculator.getHistory(req)
+	.then(result => {res.status(result.httpCode).json(result)})
 })
 
+app.delete('/calculator/v1/deleteRecord', function (req, res) {
+	console.log(req.body)
+	calculator.removeHistory(req)
+	.then(result => {res.status(result.httpCode).json(result)})
+})
 
 app.get('*', (req, res) => {
   res.sendFile(path.resolve(__dirname, '/client/public', 'index.html'));

@@ -61,7 +61,7 @@ module.exports = {
 },
 
 	selectOneRow: function (database, query, params) {
-		console.log(query)
+		//console.log(query)
 		return new Promise((resolve, reject) => {
 			database.get(query, params, (err, row) => {
 				if (err) {
@@ -74,7 +74,7 @@ module.exports = {
 	},
 
 	selectAllRows: function (database, query, params) {
-		console.log(query)
+		//console.log(query)
 		return new Promise((resolve, reject) => {
 			database.all(query, params, (err, rows) => {
 				if (err) {
@@ -85,8 +85,23 @@ module.exports = {
 			});
 		});
 	},
+	
+	execStatement: function(database, statement, params) {
+		//console.log(statement)
+		return new Promise((resolve, reject) => {
+			database.run(statement,params, (err) => {
+				if (err) {
+					reject(err); 
+				} else {
+					resolve("OK");
+				}
+			});
+		});
+	},
 
-	responseTemplates: [{"httpCode":200,"resultCode":"0","message":"OK"},{"httpCode":500,"resultCode":"-1","message":"Internal Error"}],
+	responseTemplates: [{"httpCode":200,"resultCode":"0","message":"OK"},
+						{"httpCode":500,"resultCode":"-1","message":"Internal Error"},
+						{"httpCode":401,"resultCode":"-2","message":"Unauthorized"}],
 
 	db: new sqlite3.Database('./db/calculator.db'),
 
@@ -98,45 +113,43 @@ module.exports = {
 		base: 10,     // Use Base 10
 		rnd: "new" // Which set of random numbers to use
 	},
-
-
-		//function randomCallback(sequence){
-		//	// Prints entire sequence
-		//	console.log(sequence);
-		//}
-	//getRandomNumber: function (){
-	//	return new Promise((resolve, reject) => {
-	//		random.generateIntegers(resolve,this.randomGenOptions,reject);
-	//	});
-	//},
 	
 	getRandomNumber: function (resolve,reject){
 		random.generateIntegers(resolve,this.randomGenOptions,reject);
 	},
 
 	getResponse: function (index,params){
-		//console.log(index)
-		//console.log(params)
 		var r = this.responseTemplates[index];
 		var toReturn = {"httpCode":r.httpCode,"resultCode":r.resultCode,"message":r.message,"data":params};
-		//console.log(toReturn)
 		return toReturn;
+	},
+	
+	deleteHistoryRecord: `update records set active = 0 where id = ?`,
+
+	removeHistory: function (req) {
+		return new Promise((resolve, reject) => {
+			params = [req.body.recordId]
+			this.execStatement(this.db,this.deleteHistoryRecord,params)
+			.then(r => resolve(this.getResponse(0,r)))
+			.catch(err => reject(this.getResponse(1,err)))	
+		});
+		
 	},
 
 	getHistory: function (req) {
 		return new Promise((resolve, reject) => {
-			
-			console.log(req.query);
-			
-			//this.getRandomNumber().then(randResult => console.log(randResult))
-			
 			var token = req.get('x-access-token');
-			console.log(token);
 			
 			var validToken = false;
-			var decodedUsername = jwt.verify(token,process.env.TOKEN_KEY);
-			console.log(decodedUsername)
-			
+			var decodedUsername = ''
+			try {
+			    decodedUsername = jwt.verify(token,process.env.TOKEN_KEY);
+			} 
+			catch (err) {		
+				console.log(token)
+				console.log(err)
+				resolve(this.getResponse(2,{}))
+			}
 			var resultIndex = 0;
 			var result = {}
 			var totalPages = 0;
@@ -172,13 +185,15 @@ module.exports = {
 								and h.operation_date >= ?
 								and h.amount <= ?
 								and h.amount >= ?
-								and (op.type = ? or 'any' = ?)`
+								and (op.type = ? or 'any' = ?)
+								and active = 1`
 			
 			var query = `SELECT op.type as type,
 								h.amount as amount,
 								h.user_balance as balance,
 								h.operation_response as response,
-								h.operation_date as op_date
+								h.operation_date as op_date, 
+								h.id as record_id
 								from records h 
 									left join operations op on h.operation_id = op.id
 									inner join users u on h.user_id = u.id
@@ -188,22 +203,25 @@ module.exports = {
 								and h.amount <= ?
 								and h.amount >= ?
 								and (op.type = ? or 'any' = ?)
-								limit 20
-								offset ?`
+								and active = 1 
+								limit 5
+								offset 5 * ?`
 								
 			this.selectOneRow(this.db,countQuery,countQueryParams)
-			.then(r => {totalPages = Math.floor((r.total/20) + 1); console.log(totalPages)})
+			.then(r => {totalPages = Math.floor((r.total/5))})
 			.then(r => this.selectAllRows(this.db,query,queryParams))
 			.then(rows => {
 				if (rows !== undefined){
+					console.log(rows.length)
 					result.count = rows.length
 					result.rows = rows
 					result.totalPages = totalPages
+					result.currentPage = req.query.offset
 				} else {
 					result.count = 0
 					result.rows = []
 					result.totalPages = 0
-					
+					result.currentPage = 0
 				}
 				resolve(this.getResponse(resultIndex,result))
 			} )
