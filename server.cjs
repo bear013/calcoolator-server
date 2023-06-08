@@ -24,18 +24,6 @@ app.use(function (req, res, next) {
     res.setHeader('Access-Control-Allow-Credentials', true);
     next();
 });
-
-async function wait3s() {
-  console.log(1);
-  await delay(3000);
-  console.log(2);
-}
-
-function delay(ms) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-}
  
 app.use(express.static(path.resolve(__dirname, '/client/public')));
 
@@ -77,52 +65,6 @@ app.post('/auth/v2/login/', function (req, res) {
 
 });
 
-app.post('/auth/v1/login/', function (req, res) {	
-	var username = req.body.username;
-	var password = req.body.password;
-	
-	var loginSuccessful = false;
-	
-	let db = new sqlite3.Database('./db/calculator.db');
-	
-	let sql = `SELECT balance,status FROM users where username='${username}' and password='${password}'`;
-
-	console.log(sql)
-
-	db.all(sql, [], (err, rows) => {
-		if (err) {
-			throw err;
-		}
-			rows.forEach((row) => {
-			loginSuccessful = true;
-			console.log(row.balance);
-		});
-	  
-		if (loginSuccessful) {
-			const token = jwt.sign(
-			  { user_id: username },
-			  process.env.TOKEN_KEY,
-			  {
-				expiresIn: "2h",
-			  }
-			);
-			
-			db.run(`UPDATE users SET token = '${token}' where username='${username}' and password='${password}'`);
-			
-			res.status(200);
-			res.json({"resultCode":"0","result":"OK","token":token,"balance":row.balance});
-		} else {
-			res.status(403);
-			res.json({"resultCode":"-2","result":"CANNOT AUTHENTICATE","token":"","balance":0});
-		}	  
-	  
-	});
-
-	db.close();
-	
-
-});
-
 const operationMap = {'addition':calculator.addition,
 						'subtraction':calculator.subtraction,
 						'multiplication':calculator.multiplication,
@@ -131,7 +73,6 @@ const operationMap = {'addition':calculator.addition,
 						'square_root':calculator.squareRoot};
 
 function selectOneRow(database, query, params) {
-	console.log(query)
     return new Promise((resolve, reject) => {
         database.get(query, params, (err, row) => {
             if (err) {
@@ -144,7 +85,6 @@ function selectOneRow(database, query, params) {
 }
 
 function execStatement(database, statement, params) {
-	console.log(statement)
     return new Promise((resolve, reject) => {
         database.run(statement,params, (err) => {
             if (err) {
@@ -158,16 +98,11 @@ function execStatement(database, statement, params) {
 
 app.post('/calculator/v1/operations/:operation', function (req, res) {
 	try {		
-	console.log(req.body);
-	console.log(req.get('content-type'));
-	  
 	var token = req.get('x-access-token');
-	console.log(token);
 	  
 	var validToken = false;
 	
 	const decodedUsername = jwt.verify(token,process.env.TOKEN_KEY);
-	console.log(decodedUsername)
 	
 	let db = new sqlite3.Database('./db/calculator.db');
 
@@ -179,10 +114,8 @@ app.post('/calculator/v1/operations/:operation', function (req, res) {
 	selectOneRow(db, sql, [decodedUsername.user_id])
 	.then(row => {
 		if (row !== undefined) {
-		  console.log(row.balance);
 		  var firstOperand = req.body.firstOperand;
 		  var secondOperand = req.body.secondOperand;
-		  console.log(req.params.operation);
 		  
 		  if (operationMap[req.params.operation] == undefined) {
 			return res.status(401).json({"resultCode":"-10","result":"Operation not supported","value":""});  
@@ -192,7 +125,7 @@ app.post('/calculator/v1/operations/:operation', function (req, res) {
 			  .then(newBalance => {
 				  if (newBalance.new_balance >= 0) {
 					  operationMap[req.params.operation](firstOperand,secondOperand)
-					  .then(result => {console.log(result); if (result.success){
+					  .then(result => {if (result.success){
 						  execStatement(db,`update users set balance = ?`,newBalance.new_balance)
 						  execStatement(db,`insert into records (operation_id,user_id,amount,user_balance,operation_response,operation_date,active) 
 															select op.id as operation_id, 
@@ -227,8 +160,6 @@ app.post('/calculator/v1/operations/:operation', function (req, res) {
 		console.log(error)
 		return res.status(500).json({"resultCode":"-15","result":"internal error"})
 	});
-
-	console.log(sql)
 		
 	} catch (err) {
 	  res.status(500).json({"resultCode":"-15","result":"internal error"})
@@ -243,7 +174,6 @@ app.get('/calculator/v1/history', function (req, res) {
 })
 
 app.delete('/calculator/v1/deleteRecord', function (req, res) {
-	console.log(req.body)
 	calculator.removeHistory(req)
 	.then(result => {res.status(result.httpCode).json(result)})
 })

@@ -45,8 +45,7 @@ module.exports = {
     return new Promise((resolve, reject) => {
 		var opRes='';
 		calculator.getRandomNumber(randResult => 
-							{console.log(randResult); 
-							opRes = randResult[0][0];
+							{opRes = randResult[0][0];
 							resolve({success: true, opResult: opRes})},
 							rejResult => resolve({success: false, opResult: opRes}));
     });
@@ -61,7 +60,6 @@ module.exports = {
 },
 
 	selectOneRow: function (database, query, params) {
-		//console.log(query)
 		return new Promise((resolve, reject) => {
 			database.get(query, params, (err, row) => {
 				if (err) {
@@ -74,7 +72,6 @@ module.exports = {
 	},
 
 	selectAllRows: function (database, query, params) {
-		//console.log(query)
 		return new Promise((resolve, reject) => {
 			database.all(query, params, (err, rows) => {
 				if (err) {
@@ -87,7 +84,6 @@ module.exports = {
 	},
 	
 	execStatement: function(database, statement, params) {
-		//console.log(statement)
 		return new Promise((resolve, reject) => {
 			database.run(statement,params, (err) => {
 				if (err) {
@@ -146,7 +142,6 @@ module.exports = {
 			    decodedUsername = jwt.verify(token,process.env.TOKEN_KEY);
 			} 
 			catch (err) {		
-				console.log(token)
 				console.log(err)
 				resolve(this.getResponse(2,{}))
 			}
@@ -212,7 +207,6 @@ module.exports = {
 			.then(r => this.selectAllRows(this.db,query,queryParams))
 			.then(rows => {
 				if (rows !== undefined){
-					console.log(rows.length)
 					result.count = rows.length
 					result.rows = rows
 					result.totalPages = totalPages
