@@ -5,6 +5,8 @@ const app = express()
 const port = 8099
 require('dotenv').config();
 
+const calculator = require('./calculator.cjs')
+
 const sqlite3 = require('sqlite3').verbose();
 
 //const sqlite = require('sqlite');
@@ -15,20 +17,10 @@ app.use(express.json());
 
 app.use(function (req, res, next) {
 
-    // Website you wish to allow to connect
     res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-
-    // Request methods you wish to allow
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-
-    // Request headers you wish to allow
     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type,x-access-token');
-
-    // Set to true if you need the website to include cookies in the requests sent
-    // to the API (e.g. in case you use sessions)
     res.setHeader('Access-Control-Allow-Credentials', true);
-
-    // Pass to next layer of middleware
     next();
 });
 
@@ -188,7 +180,20 @@ function selectOneRow(database, query, params) {
     });
 }
 
-app.post('/calculator/operations/:operation', function (req, res) {
+function execStatement(database, statement, params) {
+	console.log(statement)
+    return new Promise((resolve, reject) => {
+        database.run(statement,params, (err) => {
+            if (err) {
+                reject(err); 
+            } else {
+				resolve("OK");
+            }
+        });
+    });
+}
+
+app.post('/calculator/v1/operations/:operation', function (req, res) {
 	try {		
 	console.log(req.body);
 	console.log(req.get('content-type'));
@@ -225,7 +230,20 @@ app.post('/calculator/operations/:operation', function (req, res) {
 				  if (newBalance.new_balance >= 0) {
 					  var result = operationMap[req.params.operation](firstOperand,secondOperand);
 						if (result.success){
-						  db.run(`update users set balance = ${newBalance.new_balance}`);
+						  //execStatement(db,`update users set balance = ${newBalance.new_balance}`);
+						  execStatement(db,`update users set balance = ?`,newBalance.new_balance)
+							execStatement(db,`insert into records (operation_id,user_id,amount,user_balance,operation_response,operation_date,active) 
+																select op.id as operation_id, 
+																u.id as user_id,
+																op.cost as amount,
+																u.balance as balance,
+																'OK' as operation_response,
+																datetime('now') as operation_date,
+																1 as active
+																from operations op, users u
+																where op.type = ?
+																and u.username = ?`,[decodedUsername.user_id,req.params.operation])
+							
 						  return res.status(200).json({"resultCode":"0","result":"OK","value":result.opResult,"balance":newBalance.new_balance});		  
 						} else {
 						  return res.status(401).json({"resultCode":"-11","result":"There was an error executing the operation","value":""});
@@ -251,6 +269,16 @@ app.post('/calculator/operations/:operation', function (req, res) {
 	} catch (err) {
 	  res.status(500).json({"resultCode":"-15","result":"internal error"})
 	}
+})
+
+
+
+app.get('/calculator/v1/history', function (req, res) {
+	calculator.getHistory(req).
+	then(result => {res.status(result.httpCode).json(result)})
+	
+	//res.status(500).json({"resultCode":"-15","result":"not implemented yet"})
+	
 })
 
 
