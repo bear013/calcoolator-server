@@ -1,4 +1,4 @@
-const cal = require('../calculator.cjs');
+const cal = require('../calculator-operations.cjs');
 
 describe("Calculator Tests", () => {
 	test("Addition of 2 numbers", () => {

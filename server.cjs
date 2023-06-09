@@ -94,6 +94,11 @@ function execStatement(database, statement, params) {
     });
 }
 
+app.post('/calculator/v2/operations/:operation', function (req, res) {
+	calculator.execOperation(req)
+	.then(result => {res.status(result.httpCode).json(result)})
+})
+
 app.post('/calculator/v1/operations/:operation', function (req, res) {
 	try {		
 	var token = req.get('x-access-token');
