@@ -25,5 +25,9 @@ WEBSERVICEPORT="8099" <- port that this application will expose.
 
 Webservice is exposed as HTTP so keep that in mind.
 
+## Endpoints
 
-
+/auth/v2/login
+Required headers: 'content-type': 'application/json'
+Request example: {"username":username,"password":password}
+Response example: {"resultCode":"0","result":"OK","token":".......","balance":"9000"}
