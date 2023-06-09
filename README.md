@@ -38,7 +38,8 @@ Response example: {"resultCode":"0","result":"OK","token":".......","balance":"9
 
 
 ### POST /calculator/v1/operation/{operation}
-This endpoint attempts to execute the required mathematical operation and returns the result, plus the new credit balance after deducting the operation's cost.
+This endpoint attempts to execute the required mathematical operation and returns the result, plus the new credit balance after deducting the operation's cost. The operation is only fulfilled if the user attempting it has enough credits to cover the cost.
+
 Possible operations: 'addition','subtraction','multiplication','division','random_string','square_root'
 
 Random String generation requires no operands (send empty strings)
@@ -48,9 +49,19 @@ Square Root requires only firstOperand (send secondOperand as empty string)
 Required headers: 'content-type': 'application/json' , 'x-access-token' : 'your jwt token from /login'
 
 Request example: {"firstOperand":123,"secondOperand":47}
+
 Response example: {"resultCode":"0","result":"OK","value":170,"balance":8004}
 
 ### GET /calculator/v1/history
 This endpoint lists all the operations previously attempted by the user identified with the token, returning partial matches for specified filters.
-This endpoint supports paging and page selection
+This endpoint supports paging and page selection.
 
+Query parameters: minAmount,maxAmount,fromDate,untilDate,type,offset
+
+### DELETE /calculator/v1/deleteRecord
+This endpoint receives a single recordId and attempts to erase it.
+The records are soft deleted, only marking them as "inactive".
+
+Request example: {"recordId":23}
+
+Response example: {"httpCode":200,"resultCode":"0","message":"OK"}
