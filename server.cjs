@@ -1,18 +1,22 @@
 const path = require('path');
 const express = require('express');
 const jwt = require('jsonwebtoken');
-const app = express()
-
+const fs = require('fs')
 const calculator = require('./calculator.cjs')
+const app = express()
 require('dotenv').config();
 
+const https = require('https')
 const WebHostName = process.env.WEBHOSTNAME
 const WebHostPort = process.env.WEBHOSTPORT
 const port = process.env.WEBSERVICEPORT
+const useHTTPS = process.env.USEHTTPS
+
+
 
 const sqlite3 = require('sqlite3').verbose();
 
-const fs = require('node:fs')
+
 
 app.use(express.json());
 
@@ -83,6 +87,24 @@ app.get('*', (req, res) => {
   res.sendFile(path.resolve(__dirname, '/client/public', 'index.html'));
 });
 
-app.listen(port, () => {
-  console.log(`App listening on port ${port}`)
-})
+if (useHTTPS == "yes") {
+
+	const parameters = {
+		key: key,
+		cert: cert
+	}
+
+	let key = fs.readFileSync(__dirname+'/host.key','utf-8')
+	let cert = fs.readFileSync(__dirname+'/host.crt','utf-8')
+	
+	let server = https.createServer(parameters,app)
+	server.listen(port,()=>{
+	  console.log(`HTTPS App is up at ${port}`)
+	})
+} else {
+	app.listen(port, () => {
+	  console.log(`HTTP App is up at ${port}`)
+	})	
+	
+}
+
