@@ -22,6 +22,9 @@ WEBHOSTPORT="3000" <- port of request source
 
 WEBSERVICEPORT="8099" <- port that this application will expose.
 
+A basic sqlite3 pre-cooked database is provided in db/calculator.db, but if you need to rebuild it from scratch you can delete that file and execute:
+
+`node create-database.cjs`
 
 Webservice is exposed as HTTP so keep that in mind.
 
