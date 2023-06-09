@@ -3,7 +3,6 @@ const database = require("./database.cjs");
 require('dotenv').config();
 
 module.exports = {
-
 	responseTemplates: [{"httpCode":200,"resultCode":"0","message":"OK"},
 						{"httpCode":500,"resultCode":"-1","message":"Internal Error"},
 						{"httpCode":401,"resultCode":"-2","message":"Unauthorized"}],

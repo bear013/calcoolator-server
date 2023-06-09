@@ -1,19 +1,14 @@
-const sqlite3 = require('sqlite3').verbose();
-
 const jwt = require('jsonwebtoken');
 const cal = require("./calculator-operations.cjs");
 const database = require("./database.cjs");
 require('dotenv').config();
 
 module.exports = {
-
 	responseTemplates: [{"httpCode":200,"resultCode":"0","message":"OK"},
 						{"httpCode":500,"resultCode":"-1","message":"Internal Error"},
 						{"httpCode":401,"resultCode":"-2","message":"Unauthorized"},
 						{"httpCode":403,"resultCode":"-3","message":"Unsupported Operation"},
 						{"httpCode":403,"resultCode":"-4","message":"Insufficient Balance"}],
-
-//	db: new sqlite3.Database('./db/calculator.db'),
 
 	operationMap:{'addition':cal.addition,
 						'subtraction':cal.subtraction,
@@ -31,8 +26,6 @@ module.exports = {
 	execOperation: function (req){
 		return new Promise((resolve, reject) => {
 			var token = req.get('x-access-token');
-			
-			//let db = new sqlite3.Database('./db/calculator.db');
 			  
 			var decodedUsername = '';
 			  

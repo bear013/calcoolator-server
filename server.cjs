@@ -1,28 +1,20 @@
 const path = require('path');
 const express = require('express');
-const jwt = require('jsonwebtoken');
+//const jwt = require('jsonwebtoken');
 const fs = require('fs')
 const calculator = require('./calculator.cjs')
 const auth = require('./auth.cjs')
-const app = express()
 require('dotenv').config();
-
 const https = require('https')
 const WebHostName = process.env.WEBHOSTNAME
 const WebHostPort = process.env.WEBHOSTPORT
 const port = process.env.WEBSERVICEPORT
 const useHTTPS = process.env.USEHTTPS
 
-
-
-//const sqlite3 = require('sqlite3').verbose();
-
-
-
+const app = express()
 app.use(express.json());
 
 app.use(function (req, res, next) {
-
 	res.setHeader('Access-Control-Allow-Origin', `http://${WebHostName}:${WebHostPort}`);
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE');
     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type,x-access-token');
@@ -35,9 +27,7 @@ app.use(express.static(path.resolve(__dirname, '/client/public')));
 app.post('/auth/v2/login/', function (req, res) {		
 	auth.login(req)
 	.then(result => {res.status(result.httpCode).json(result)})	
-
 });
-
 
 app.post('/calculator/v2/operations/:operation', function (req, res) {
 	calculator.execOperation(req)
@@ -59,7 +49,6 @@ app.get('*', (req, res) => {
 });
 
 if (useHTTPS == "yes") {
-
 	const parameters = {
 		key: key,
 		cert: cert
