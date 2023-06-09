@@ -101,9 +101,6 @@ module.exports = {
 
 	db: new sqlite3.Database('./db/calculator.db'),
 
-	
-
-
 	getResponse: function (index,params){
 		var r = this.responseTemplates[index];
 		var toReturn = {"httpCode":r.httpCode,"resultCode":r.resultCode,"message":r.message,"data":params};
@@ -114,6 +111,17 @@ module.exports = {
 
 	removeHistory: function (req) {
 		return new Promise((resolve, reject) => {
+			
+			var token = req.get('x-access-token');
+			var decodedUsername = ''
+			try {
+			    decodedUsername = jwt.verify(token,process.env.TOKEN_KEY);
+			} 
+			catch (err) {		
+				console.log(err)
+				resolve(this.getResponse(2,{}))
+			}
+			
 			params = [req.body.recordId]
 			this.execStatement(this.db,this.deleteHistoryRecord,params)
 			.then(r => resolve(this.getResponse(0,r)))
