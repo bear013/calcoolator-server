@@ -2,12 +2,13 @@ const path = require('path');
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const app = express()
-const port = 8099
+
 const calculator = require('./calculator.cjs')
 require('dotenv').config();
 
 const WebHostName = process.env.WEBHOSTNAME
 const WebHostPort = process.env.WEBHOSTPORT
+const port = process.env.WEBSERVICEPORT
 
 const sqlite3 = require('sqlite3').verbose();
 
@@ -37,8 +38,6 @@ app.post('/auth/v2/login/', function (req, res) {
 	
 	let sql = `SELECT balance,status FROM users where username='${username}' and password='${password}'`;
 
-	console.log(sql)
-
 	var token = '';
 
 	db.get(sql, [], (err, row) => {
@@ -48,13 +47,12 @@ app.post('/auth/v2/login/', function (req, res) {
 		
 		if (row !== undefined) {
 			loginSuccessful = true;
-			console.log(row.balance);
+			var d = new Date();
+			console.log(`${d} - user ${username} just logged in`)
 		}
 	  
 		if (loginSuccessful) {
 			token = jwt.sign( { user_id: username }, process.env.TOKEN_KEY, { expiresIn: "2h", } );
-			
-			//db.run(`UPDATE users SET token = '${token}' where username='${username}' and password='${password}'`);
 			
 			res.status(200).json({"resultCode":"0","result":"OK","token":token,"balance":row.balance});
 		} else {
@@ -114,6 +112,7 @@ app.post('/calculator/v1/operations/:operation', function (req, res) {
 	selectOneRow(db, sql, [decodedUsername.user_id])
 	.then(row => {
 		if (row !== undefined) {
+		  var oldBalance = row.balance;
 		  var firstOperand = req.body.firstOperand;
 		  var secondOperand = req.body.secondOperand;
 		  
@@ -141,9 +140,8 @@ app.post('/calculator/v1/operations/:operation', function (req, res) {
 							
 						  return res.status(200).json({"resultCode":"0","result":"OK","value":result.opResult,"balance":newBalance.new_balance});		  
 						} else {
-						  return res.status(401).json({"resultCode":"-11","result":"There was an error executing the operation","value":""});
+						  return res.status(401).json({"resultCode":"-11","result":"There was an error executing the operation","value":"","balance":oldBalance});
 					  }})
-					  //var result = operationMap[req.params.operation](firstOperand,secondOperand);
 						
 				  } else {
 					  return res.status(401).json({"resultCode":"-20","result":"The current balance is insufficient to execute the operation","value":"","newBalance":row.balance});

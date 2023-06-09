@@ -1,7 +1,7 @@
 const sqlite3 = require('sqlite3').verbose();
 
 const jwt = require('jsonwebtoken');
-const random = require("./random.cjs");
+const genrandom = require("./genrandom.cjs");
 require('dotenv').config();
 
 module.exports = {
@@ -44,7 +44,7 @@ module.exports = {
 	randomString: function (firstOperand, secondOperand) {
     return new Promise((resolve, reject) => {
 		var opRes='';
-		calculator.getRandomNumber(randResult => 
+		genrandom.getRandomNumber(randResult => 
 							{opRes = randResult[0][0];
 							resolve({success: true, opResult: opRes})},
 							rejResult => resolve({success: false, opResult: opRes}));
@@ -101,18 +101,8 @@ module.exports = {
 
 	db: new sqlite3.Database('./db/calculator.db'),
 
-	randomGenOptions:  {
-		secure: true, // Make the request secure
-		min: 0,     // Lower bound 0
-		max: 1000000000,      // Upper bound 10
-		col: 1,       // 1 column
-		base: 10,     // Use Base 10
-		rnd: "new" // Which set of random numbers to use
-	},
 	
-	getRandomNumber: function (resolve,reject){
-		random.generateIntegers(resolve,this.randomGenOptions,reject);
-	},
+
 
 	getResponse: function (index,params){
 		var r = this.responseTemplates[index];
