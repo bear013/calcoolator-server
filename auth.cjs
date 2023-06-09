@@ -20,8 +20,6 @@ module.exports = {
 			
 			var loginSuccessful = false;
 			
-			//let db = new sqlite3.Database('./db/calculator.db');
-			
 			let sql = `SELECT balance,status FROM users where username=? and password=?`;
 
 			var token = '';
@@ -37,6 +35,8 @@ module.exports = {
 					} else {
 						resolve(this.getResponse(2,{"token":"","balance":"0"}))
 					}				
+				} else {
+					resolve(this.getResponse(2,{"token":"","balance":"0"}))
 				}
 			}).catch(err => {
 				console.log(err);

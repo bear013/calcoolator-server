@@ -24,7 +24,8 @@ app.use(function (req, res, next) {
  
 app.use(express.static(path.resolve(__dirname, '/client/public')));
 
-app.post('/auth/v2/login/', function (req, res) {		
+app.post('/auth/v2/login/', function (req, res) {	
+	console.log('login attempt - '+req.body.username)
 	auth.login(req)
 	.then(result => {res.status(result.httpCode).json(result)})	
 });
