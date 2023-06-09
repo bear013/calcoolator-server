@@ -27,7 +27,30 @@ Webservice is exposed as HTTP so keep that in mind.
 
 ## Endpoints
 
-/auth/v2/login
+### POST /auth/v2/login
+This endpoint validates sign in information and returns a token for consuming the rest of the services.
+
 Required headers: 'content-type': 'application/json'
-Request example: {"username":username,"password":password}
+
+Request example: {"username":'johnny',"password":'five'}
+
 Response example: {"resultCode":"0","result":"OK","token":".......","balance":"9000"}
+
+
+### POST /calculator/v1/operation/{operation}
+This endpoint attempts to execute the required mathematical operation and returns the result, plus the new credit balance after deducting the operation's cost.
+Possible operations: 'addition','subtraction','multiplication','division','random_string','square_root'
+
+Random String generation requires no operands (send empty strings)
+
+Square Root requires only firstOperand (send secondOperand as empty string)
+
+Required headers: 'content-type': 'application/json' , 'x-access-token' : 'your jwt token from /login'
+
+Request example: {"firstOperand":123,"secondOperand":47}
+Response example: {"resultCode":"0","result":"OK","value":170,"balance":8004}
+
+### GET /calculator/v1/history
+This endpoint lists all the operations previously attempted by the user identified with the token, returning partial matches for specified filters.
+This endpoint supports paging and page selection
+
