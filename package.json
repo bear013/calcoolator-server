@@ -6,11 +6,17 @@
     "random": "^4.1.0",
     "sqlite": "^4.2.1",
     "sqlite3": "^5.1.6",
-	"jest":"28.1.0"
+    "jest": "28.1.0",
+    "chai": "^4.2.0",
+    "faker": "^4.1.0",
+    "mocha": "^6.2.1",
+    "supertest": "^4.0.2" 
   },
   "type": "module",
   "scripts": {
     "start": "node server.cjs",
-	"test": "jest"
+    "checknodeversion" : "node --version",
+    "test-model": "jest",
+    "test-api": "mocha --timeout 25000 --colors"
   }
 }

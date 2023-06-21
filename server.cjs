@@ -1,6 +1,5 @@
 const path = require('path');
 const express = require('express');
-//const jwt = require('jsonwebtoken');
 const fs = require('fs')
 const calculator = require('./calculator.cjs')
 const auth = require('./auth.cjs')
@@ -15,12 +14,16 @@ const app = express()
 app.use(express.json());
 
 app.use(function (req, res, next) {
-	res.setHeader('Access-Control-Allow-Origin', `http://${WebHostName}:${WebHostPort}`);
+    res.setHeader('Access-Control-Allow-Origin', `http://${WebHostName}:${WebHostPort}`);
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE');
     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type,x-access-token');
     res.setHeader('Access-Control-Allow-Credentials', true);
     next();
 });
+
+app.use('/calculator/v2/',auth.checkUserTokenPresent,
+						auth.validateUserToken,
+						auth.validateUser);
  
 app.use(express.static(path.resolve(__dirname, '/client/public')));
 
