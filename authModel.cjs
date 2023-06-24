@@ -4,6 +4,12 @@ const jwt = require('jsonwebtoken');
 const SecretJWTKey = process.env.TOKEN_KEY
 
 module.exports = { 
+    generateToken: function(username){
+        var token = jwt.sign( { user_id: username }, 
+                                SecretJWTKey, 
+                                { expiresIn: "2h" } );
+        return token;
+    },
 
     checkToken: function(token){
         console.log('checkToken')

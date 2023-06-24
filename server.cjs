@@ -8,7 +8,7 @@ const https = require('https')
 const WebHostName = process.env.WEBHOSTNAME
 const WebHostPort = process.env.WEBHOSTPORT
 const port = process.env.WEBSERVICEPORT
-const useHTTPS = process.env.USEHTTPS
+const useHTTPS = (process.env.USEHTTPS == 'yes')
 
 const app = express()
 app.use(express.json());
@@ -52,7 +52,7 @@ app.get('*', (req, res) => {
   res.sendFile(path.resolve(__dirname, '/client/public', 'index.html'));
 });
 
-if (useHTTPS == "yes") {
+if (useHTTPS) {
 	const parameters = {
 		key: key,
 		cert: cert

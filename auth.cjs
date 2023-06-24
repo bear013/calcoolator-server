@@ -5,6 +5,8 @@ const utils = require('./utils.cjs')
 
 module.exports = {
 
+
+
 login: function (req){
            return new Promise((resolve, reject) => {
                    var username = req.body.username;
@@ -14,15 +16,13 @@ login: function (req){
 
                    let sql = `SELECT balance,status FROM users where username=? and password=?`;
 
-                   var token = '';
-
                    database.selectOneRow(database.db, sql, [username,password]).then(row => {
                            if (row !== undefined) {
                                 loginSuccessful = true;
                                 var d = new Date();
                                 console.log(`${d} - user ${username} just logged in`)
-                                token = jwt.sign( { user_id: username }, process.env.TOKEN_KEY, { expiresIn: "2h", } );
                                 if (row.status == 1){
+                                    var token = authModel.generateToken(username)
                                     resolve(utils.getResponse(0,{"token":token,"balance":row.balance}))
                                 } else {
                                     resolve(utils.getResponse(2,{"token":"","balance":"0"}))
