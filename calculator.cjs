@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const cal = require("./calculator-operations.cjs");
 const database = require("./database.cjs");
-require('dotenv').config();
+//require('dotenv').config();
 
 module.exports = {
 	responseTemplates: [{"httpCode":200,"resultCode":"0","message":"OK"},
@@ -25,25 +25,15 @@ module.exports = {
 
 	execOperation: function (req){
 		return new Promise((resolve, reject) => {
-			var token = req.get('x-access-token');
-			  
-			var decodedUsername = '';
-			  
-			var validToken = false;
-			try {
-				decodedUsername = jwt.verify(token,process.env.TOKEN_KEY);
+			console.log("req.user:"+req.user)
+			var user = req.user;
 				
-			} catch (e) {
-				console.log(e);
-				resolve(this.getResponse(2,{}));		
-			}
-
 			let sql = `SELECT balance FROM users where users.username = ?`;
 
 			var response = {}
 			var responseCode = {}
 
-			database.selectOneRow(database.db, sql, [decodedUsername.user_id])
+			database.selectOneRow(database.db, sql, [user])
 			.then(row => {
 				if (row !== undefined) {
 				  var oldBalance = row.balance;
@@ -52,13 +42,13 @@ module.exports = {
 				  if (this.operationMap[req.params.operation] == undefined) {
 					  resolve(this.getResponse(3,{"value":"","balance":oldBalance})) 
 				  } else {
-					  checkBalanceQuery = `select users.balance - operations.cost as new_balance from users,operations where users.username = '${decodedUsername.user_id}' and operations.type='${req.params.operation}'`;
+					  checkBalanceQuery = `select users.balance - operations.cost as new_balance from users,operations where users.username = '${user}' and operations.type='${req.params.operation}'`;
 					  database.selectOneRow(database.db, checkBalanceQuery, [])
 					  .then(newBalance => {
 						  if (newBalance.new_balance >= 0) {
 							  this.operationMap[req.params.operation](firstOperand,secondOperand)
 							  .then(result => {
-								   database.execStatement(database.db,`update users set balance = ?`,newBalance.new_balance)
+								   database.execStatement(database.db,`update users set balance = ? where username= ?`,[newBalance.new_balance,user])
 								   database.execStatement(database.db,`insert into records (operation_id,user_id,amount,user_balance,operation_response,operation_date,active) 
 														select op.id as operation_id, 
 														u.id as user_id,
@@ -69,7 +59,7 @@ module.exports = {
 														1 as active
 														from operations op, users u
 														where op.type = ?
-														and u.username = ?`,[req.params.operation,decodedUsername.user_id])
+														and u.username = ?`,[req.params.operation,user])
 									resolve(this.getResponse(0,{"value":result.opResult,"balance":newBalance.new_balance}))	  
 								})
 								.catch(err => resolve(this.getResponse(2,{"value":"","balance":oldBalance})))

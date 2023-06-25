@@ -47,25 +47,27 @@ checkUserTokenPresent: function (req,res, next){
 },
 
 validateUserToken: function (req, res, next) {
+    console.log("validateUserToken start")
     const token = req.get('x-access-token');
-    user = authModel.checkToken(token);
-    if (user){
+    authModel.checkToken(token).then(user => {
+        console.log(user)
+        console.log("validateUserToken OK:"+user)
         req.user = user;
         next();
-    } else {
+    }).catch( e => {
+        console.log("validateUserToken FAIL")
         response = utils.getResponse(3,{})
         res.status(response.httpCode).json(response)
-    }
+    })
 },
 
 validateUser: function (req,res,next){
-    findUser(req.user).then( balance => {
-        req.balance = balance 
+    authModel.findUser(req.user).then( result => {
         next();
     }
     ).catch(e => {
         console.log(e)
-        console.log('validateUser failed')
+        console.log('validateUser failed - user not found')
         response = utils.getResponse(2,{})
         res.status(response.httpCode).json(response)
     })

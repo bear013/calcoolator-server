@@ -13,23 +13,28 @@ module.exports = {
 
     checkToken: function(token){
         console.log('checkToken')
-        jwt.verify(token, SecretJWTKey , (err, user) => {
-            if (err) {
-                return false;
-            }
-            return user;
-        });
+        return new Promise((resolve, reject) => {
+            jwt.verify(token, SecretJWTKey , (err, user) => {
+                if (err) {
+                    console.log("checkToken FAIL")
+                    reject()
+                }
+                var u = user.user_id
+                console.log("checkToken decoded user:"+u)
+                console.log("checkToken OK")
+                resolve(u)
+            });
+        })
     },
 
     findUser: function(username){
         return new Promise((resolve, reject) => {
             console.log('findUser '+username)
-            let sql = `SELECT balance FROM users where users.username = ?`;
-
+            let sql = `SELECT 1 as result FROM users where users.username = ?`;
 			database.selectOneRow(database.db, sql, [username])
 			.then(row => {
 				if (row !== undefined) {
-                    resolve(row.balance)
+                    resolve(1)
                 } else {
                     reject(0)
                 }
