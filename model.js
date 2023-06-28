@@ -9,3 +9,4 @@ const sequelize = new Sequelize('', '', '', {
   },
 });
 
+
