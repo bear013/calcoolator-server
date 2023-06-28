@@ -18,6 +18,7 @@
     "start": "node server.cjs",
     "checknodeversion": "node --version",
     "test-model": "jest",
-    "test-api": "mocha --recursive './test/*.cjs' --timeout 25000 --colors"
+    "test-api": "mocha --recursive './test/*.cjs' --timeout 25000 --colors",
+    "create-test-model" : "node create-test-model.cjs"
   }
 }

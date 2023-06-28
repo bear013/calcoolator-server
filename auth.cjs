@@ -4,9 +4,6 @@ const authModel = require('./authModel.cjs');
 const utils = require('./utils.cjs')
 
 module.exports = {
-
-
-
 login: function (req){
            return new Promise((resolve, reject) => {
                    var username = req.body.username;
