@@ -1,4 +1,4 @@
-const testConfig = require('./test.config.cjs')
+const testConfig = require('./test.config.js')
 const should = require('chai').should()
 const expect = require('chai').expect
 const supertest = require('supertest')

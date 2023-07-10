@@ -1,7 +1,7 @@
 
-const database = require("./database.cjs");
-const authModel = require('./authModel.cjs');
-const utils = require('./utils.cjs')
+const database = require("./database.js");
+const authModel = require('./authModel.js');
+const utils = require('./utils.js')
 
 module.exports = {
 login: function (req){

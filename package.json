@@ -13,12 +13,11 @@
     "sqlite3": "^5.1.6",
     "supertest": "^4.0.2"
   },
-  "type": "module",
   "scripts": {
-    "start": "node server.cjs",
+    "start": "node server.js",
     "checknodeversion": "node --version",
     "test-model": "jest",
-    "test-api": "mocha --recursive './test/*.cjs' --timeout 25000 --colors",
-    "create-test-model" : "node create-test-model.cjs"
+    "test-api": "mocha --recursive './test/*.js' --timeout 25000 --colors",
+    "create-test-model" : "node create-test-model.js"
   }
 }
