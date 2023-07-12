@@ -1,4 +1,4 @@
-const random = require("./random.cjs");
+const random = require("./random.js");
 
 module.exports = {
 	randomGenOptions:  {

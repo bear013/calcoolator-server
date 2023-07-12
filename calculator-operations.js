@@ -1,4 +1,4 @@
-const genrandom = require("./genrandom.cjs");
+const genrandom = require("./genrandom.js");
 
 module.exports = {
 

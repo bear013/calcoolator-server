@@ -1,4 +1,4 @@
-const {sequelize , DataTypes} = require('./db.cjs')
+const {sequelize , DataTypes} = require('./db')
 
 const User = sequelize.define('User', {
   username: {
@@ -20,8 +20,5 @@ const User = sequelize.define('User', {
 });
 
 
-module.exports = {
-  User
-
-}
+module.exports = User
 

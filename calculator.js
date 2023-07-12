@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
-const cal = require("./calculator-operations.cjs");
-const database = require("./database.cjs");
+const cal = require("./calculator-operations.js");
+const database = require("./database.js");
 //require('dotenv').config();
 
 module.exports = {
