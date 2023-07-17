@@ -1,16 +1,7 @@
 const {sequelize , DataTypes} = require('./db')
 const User = require('./User')
 const Operation = require('./Operation')
-
-/*id INTEGER PRIMARY KEY AUTOINCREMENT,
-operation_id INT NOT NULL,
-user_id INT NOT NULL,
-amount INT NOT NULL,
-user_balance INT NOT NULL,
-operation_response VARCHAR(256) NOT NULL,
-operation_date DATETIME NOT NULL,
-active INT NOT NULL
-*/
+const TransactionType = require('./TransactionType')
 
 const Transaction = sequelize.define('Transaction', {
   active: {
@@ -20,17 +11,21 @@ const Transaction = sequelize.define('Transaction', {
     type: DataTypes.STRING
   },
   operation_date:{
-    type: DataTypes.DATE
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
   },
   amount:{
     type: DataTypes.BIGINT
   }
 }, {
-  
+  paranoid: true
 });
 
-Transaction.hasOne(Operation);
 User.hasMany(Transaction)
 Transaction.belongsTo(User)
+Operation.hasMany(Transaction)
+Transaction.belongsTo(Operation)
+TransactionType.hasMany(Transaction)
+Transaction.belongsTo(TransactionType)
 
 module.exports = Transaction

@@ -1,5 +1,5 @@
 module.exports = {
-    dbLocation: './db/calculator-new.db'
+    dbLocation: './db/calculator.sqlite'
 
 
 }

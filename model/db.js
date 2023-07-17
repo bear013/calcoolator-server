@@ -10,6 +10,7 @@ const sequelize = new Sequelize('calculator', 'admin', 'admin', {
   dialectOptions: {
     mode: SQLite.OPEN_READWRITE | SQLite.OPEN_CREATE 
   },
+  logging: false
 });
 
 module.exports = {

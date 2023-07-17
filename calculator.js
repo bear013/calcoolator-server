@@ -1,7 +1,6 @@
 const jwt = require('jsonwebtoken');
 const cal = require("./calculator-operations.js");
 const database = require("./database.js");
-//require('dotenv').config();
 
 module.exports = {
 	responseTemplates: [{"httpCode":200,"resultCode":"0","message":"OK"},
