@@ -1,6 +1,5 @@
 require('dotenv').config();
-//database = require('./database.cjs')
-const model = require('model')
+const User = require('../model/User')
 const jwt = require('jsonwebtoken');
 const SecretJWTKey = process.env.TOKEN_KEY
 
@@ -31,15 +30,32 @@ module.exports = {
     findUser: function(username){
         return new Promise((resolve, reject) => {
             console.log('findUser '+username)
-            //let sql = `SELECT 1 as result FROM users where users.username = ?`;
-			//database.selectOneRow(database.db, sql, [username])
-			//.then(row => {
-			//	if (row !== undefined) {
-            //        resolve(1)
-            //    } else {
-            //        reject(0)
-            //    }
-            //})
+            User.findOne({where: {username: username}})
+            .then(user => {
+                            if (user != null) {
+                                resolve(user.id);
+                            }
+                            else {
+                                reject(0);
+                            }
+                          })
+            .catch(error => {reject(0)})
+        })
+    },
+
+    login: function(username,password){
+        return new Promise((resolve, reject) => {
+            console.log('login',username,password)
+            User.findOne({where: {username: username, password:password}})
+            .then(user => {
+                            if (user != null) {
+                                resolve(user.id);
+                            }
+                            else {
+                                reject(0);
+                            }
+                          })
+            .catch(error => {reject(0)})
         })
     }
     

@@ -1,8 +1,8 @@
 const path = require('path');
 const express = require('express');
 const fs = require('fs')
-const calculator = require('./calculator.cjs')
-const auth = require('./auth.cjs')
+const calculator = require('./services/calculator.js')
+const auth = require('./services/auth.js')
 require('dotenv').config();
 const https = require('https')
 const WebHostName = process.env.WEBHOSTNAME

@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
-const cal = require("./calculator-operations.js");
-const database = require("./database.js");
+const cal = require("../utils/calculator-operations.js");
+const database = require("../database.js");
 
 module.exports = {
 	responseTemplates: [{"httpCode":200,"resultCode":"0","message":"OK"},
