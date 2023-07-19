@@ -12,12 +12,12 @@ module.exports = {
             authModel.login(username, password)
                 .then(loginResult => {
                     var d = new Date();
-                    console.log(`${d} - user ${username} just logged in`);
+                    utils.logInfo(`${d} - user ${username} just logged in`);
                     var token = authModel.generateToken(username)
                     resolve(utils.getResponse(0, { "token": token }))
                 })
                 .catch(error => {
-                    console.log('login failed!', error);
+                    utils.logInfo('login failed!', error);
                     resolve(utils.getResponse(2, { "token": "" }))
                 })
         })
@@ -33,15 +33,15 @@ module.exports = {
     },
 
     validateUserToken: function (req, res, next) {
-        console.log("validateUserToken start")
+        utils.logInfo("validateUserToken start")
         const token = req.get('x-access-token');
         authModel.checkToken(token).then(user => {
-            console.log(user)
-            console.log("validateUserToken OK:" + user)
+            utils.logInfo(user)
+            utils.logInfo("validateUserToken OK:" + user)
             req.user = user;
             next();
         }).catch(e => {
-            console.log("validateUserToken FAIL")
+            utils.logInfo("validateUserToken FAIL")
             response = utils.getResponse(3, {})
             res.status(response.httpCode).json(response)
         })
@@ -52,8 +52,8 @@ module.exports = {
             next();
         }
         ).catch(e => {
-            console.log(e)
-            console.log('validateUser failed - user not found')
+            utils.logInfo(e)
+            utils.logInfo('validateUser failed - user not found')
             response = utils.getResponse(2, {})
             res.status(response.httpCode).json(response)
         })

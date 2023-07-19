@@ -9,6 +9,11 @@ module.exports = {
         var r = this.responseTemplates[index];
         var toReturn = {"httpCode":r.httpCode,"resultCode":r.resultCode,"message":r.message,"data":params};
         return toReturn;
+    },
+
+    logInfo: function (data){
+        d = new Date();
+        console.log(d,'|',data);
     }
     
 }

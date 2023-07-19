@@ -22,6 +22,12 @@ module.exports = {
 		return toReturn;
 	},
 
+	getUserBalance: function (req){
+		return new Promise((resolve,reject) => {
+			console.log("getUserBalance start")
+		})
+	},
+
 	execOperation: function (req){
 		return new Promise((resolve, reject) => {
 			console.log("req.user:"+req.user)
