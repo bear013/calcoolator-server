@@ -9,6 +9,7 @@ const WebHostName = process.env.WEBHOSTNAME
 const WebHostPort = process.env.WEBHOSTPORT
 const port = process.env.WEBSERVICEPORT
 const useHTTPS = (process.env.USEHTTPS == 'yes')
+const utils = require('./utils/utils')
 
 const app = express()
 app.use(express.json());
@@ -28,10 +29,15 @@ app.use('/calculator/v2/',auth.checkUserTokenPresent,
 app.use(express.static(path.resolve(__dirname, '/client/public')));
 
 app.post('/auth/v2/login/', function (req, res) {	
-	console.log('login attempt - '+req.body.username)
+	//utils.logInfo('login attempt - '+req.body.username)
 	auth.login(req)
 	.then(result => {res.status(result.httpCode).json(result)})	
 });
+
+app.get('/calculator/v2/balance', function (req, res) {
+	calculator.getUserBalance(req)
+	.then(result => {res.status(result.httpCode).json(result)})
+})
 
 app.post('/calculator/v2/operations/:operation', function (req, res) {
 	calculator.execOperation(req)
@@ -63,11 +69,11 @@ if (useHTTPS) {
 	
 	let server = https.createServer(parameters,app)
 	server.listen(port,()=>{
-	  console.log(`HTTPS App is up at ${port}`)
+	  utils.logInfo(`HTTPS App is up at ${port}`)
 	})
 } else {
 	app.listen(port, () => {
-	  console.log(`HTTP App is up at ${port}`)
+	  utils.logInfo(`HTTP App is up at ${port}`)
 	})	
 	
 }

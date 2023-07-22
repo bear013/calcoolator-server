@@ -12,7 +12,7 @@ module.exports = {
             authModel.login(username, password)
                 .then(loginResult => {
                     var d = new Date();
-                    utils.logInfo(`${d} - user ${username} just logged in`);
+                    utils.logInfo(`user ${username} just logged in`);
                     var token = authModel.generateToken(username)
                     resolve(utils.getResponse(0, { "token": token }))
                 })

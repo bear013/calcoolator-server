@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 module.exports = { 
 
     responseTemplates: [{"httpCode":200,"resultCode":"0","message":"OK"},
@@ -11,9 +13,9 @@ module.exports = {
         return toReturn;
     },
 
-    logInfo: function (data){
-        d = new Date();
-        console.log(d,'|',data);
+    logInfo: function (...data){
+        var d = new Date();
+        console.log(d.toString(),'|',...data);
     }
     
 }

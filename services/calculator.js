@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken');
 const cal = require("../utils/calculator-operations.js");
 const database = require("../database.js");
+const calcModel = require("./calculatorModel.js")
+const utils = require('../utils/utils')
 
 module.exports = {
 	responseTemplates: [{"httpCode":200,"resultCode":"0","message":"OK"},
@@ -9,22 +11,24 @@ module.exports = {
 						{"httpCode":403,"resultCode":"-3","message":"Unsupported Operation"},
 						{"httpCode":403,"resultCode":"-4","message":"Insufficient Balance"}],
 
-	operationMap:{'addition':cal.addition,
-						'subtraction':cal.subtraction,
-						'multiplication':cal.multiplication,
-						'division':cal.division,
-						'random_string':cal.randomString,
-						'square_root':cal.squareRoot},
 
-	getResponse: function (index,params){
+
+	/*getResponse: function (index,params){
 		var r = this.responseTemplates[index];
 		var toReturn = {"httpCode":r.httpCode,"resultCode":r.resultCode,"message":r.message,"data":params};
 		return toReturn;
-	},
+	},*/
 
 	getUserBalance: function (req){
 		return new Promise((resolve,reject) => {
-			console.log("getUserBalance start")
+			utils.logInfo("getUserBalance start")
+			var user = req.user;
+			calcModel.getBalance(user)
+			.then(balance => resolve(utils.getResponse(0,{"balance":balance})))
+			.catch(e => {
+				utils.logInfo(e);
+				resolve(utils.getResponse(1,{"balance":"0"}))
+			})
 		})
 	},
 
@@ -32,7 +36,20 @@ module.exports = {
 		return new Promise((resolve, reject) => {
 			console.log("req.user:"+req.user)
 			var user = req.user;
-				
+			var operation = req.params.operation
+			var firstOperand = req.body.firstOperand;
+			var secondOperand = req.body.secondOperand;			
+			var transactionId = '';	
+
+			calcModel.validateOperation(operation)
+				.then(op => calcModel.consumeOperation(user,operation))
+				.then(trId => transactionId = trId)
+				.then(ok => calcModel.calculateResult(operation,firstOperand,secondOperand))
+				.then(result => INSERT CODE HERE FOR RESULT MANAGEMENT)
+				.catch(e => calcModel.refundTransaction(user,transactionId))
+				.then(bal => resolve(this.getResponse(2,{"value":"","balance":bal})))
+					
+
 			let sql = `SELECT balance FROM users where users.username = ?`;
 
 			var response = {}

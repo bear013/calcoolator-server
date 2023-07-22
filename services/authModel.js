@@ -2,6 +2,7 @@ require('dotenv').config();
 const User = require('../model/User')
 const jwt = require('jsonwebtoken');
 const SecretJWTKey = process.env.TOKEN_KEY
+const utils = require('../utils/utils')
 
 module.exports = { 
     generateToken: function(username){
@@ -12,16 +13,16 @@ module.exports = {
     },
 
     checkToken: function(token){
-        console.log('checkToken')
+        utils.logInfo('checkToken')
         return new Promise((resolve, reject) => {
             jwt.verify(token, SecretJWTKey , (err, user) => {
                 if (err) {
-                    console.log("checkToken FAIL")
+                    utils.logInfo("checkToken FAIL")
                     reject()
                 }
                 var u = user.user_id
-                console.log("checkToken decoded user:"+u)
-                console.log("checkToken OK")
+                utils.logInfo("checkToken decoded user:"+u)
+                utils.logInfo("checkToken OK")
                 resolve(u)
             });
         })
@@ -29,7 +30,7 @@ module.exports = {
 
     findUser: function(username){
         return new Promise((resolve, reject) => {
-            console.log('findUser '+username)
+            utils.logInfo('findUser '+username)
             User.findOne({where: {username: username}})
             .then(user => {
                             if (user != null) {
@@ -45,7 +46,7 @@ module.exports = {
 
     login: function(username,password){
         return new Promise((resolve, reject) => {
-            console.log('login',username,password)
+            //utils.logInfo('login',username,password)
             User.findOne({where: {username: username, password:password}})
             .then(user => {
                             if (user != null) {
