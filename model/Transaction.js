@@ -5,7 +5,8 @@ const TransactionType = require('./TransactionType')
 
 const Transaction = sequelize.define('Transaction', {
   active: {
-    type: DataTypes.BOOLEAN
+    type: DataTypes.BOOLEAN,
+    defaultValue: true
   },
   operation_response: {
     type: DataTypes.STRING
@@ -16,6 +17,19 @@ const Transaction = sequelize.define('Transaction', {
   },
   amount:{
     type: DataTypes.BIGINT
+  },
+  transactionUniqueId:{
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    allowNull: false
+  },
+  transactionExternalId:{
+    type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
+    allowNull: false
+  },
+  reversal_date: {
+    type: DataTypes.DATE
   }
 }, {
   paranoid: true

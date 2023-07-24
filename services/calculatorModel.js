@@ -1,7 +1,8 @@
-const User = require('../model/User')
-const Transaction = require('../model/Transaction')
+const UserManager = require('../model/UserManager')
+const TransactionManager = require('../model/TransactionManager')
 const utils = require('../utils/utils')
 const cal = require('../utils/calculator-operations')
+
 
 module.exports = { 
 
@@ -16,13 +17,9 @@ module.exports = {
 
     getBalance: function(user){
         return new Promise((resolve,reject) => {
-            User.findOne({where: {username:user}})
-            .then(result => Transaction.sum('amount',{where: {UserId:result.id}}))
-            .then(balance => resolve(balance))
-            .catch(e => {
-                utils.logInfo('Error while fetching Balance: ' + e)
-                reject(-1)
-            })
+            TransactionManager.getUserBalance(user)
+                .then(balance => resolve(balance))
+                .catch(error => reject(error))
         })
     },
 
@@ -38,7 +35,32 @@ module.exports = {
 
     consumeOperation: function(user,operation){
         return new Promise((resolve,reject) => {
-            resolve('abcdef')
+            TransactionManager.consumeOperation(user,operation)
+                .then(transactionId => resolve(transactionId))
+                .catch(error => reject("consumeOperation fail:" + error))            
+        })
+    },  
+    
+    addBalance: function(user,amount){
+        return new Promise((resolve,reject) => {
+            TransactionManager.addBalance(user,amount)
+                .then(transactionId => resolve(transactionId))
+                .catch(error => reject("addBalance fail:" + error))            
         })
     },    
+
+    calculateResult: function(operation,firstOperand,secondOperand) {
+        return new Promise((resolve,reject) => {
+            this.operationMap[operation](firstOperand,secondOperand)
+                .then(result => resolve(result))
+                .catch(error => reject(error))
+        })
+    },
+
+    refundTransaction: function(user,transactionId) {
+        return new Promise((resolve,reject) => {
+            resolve(-1)
+        })        
+    }
+    
 };

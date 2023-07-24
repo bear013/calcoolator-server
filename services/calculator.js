@@ -11,14 +11,6 @@ module.exports = {
 						{"httpCode":403,"resultCode":"-3","message":"Unsupported Operation"},
 						{"httpCode":403,"resultCode":"-4","message":"Insufficient Balance"}],
 
-
-
-	/*getResponse: function (index,params){
-		var r = this.responseTemplates[index];
-		var toReturn = {"httpCode":r.httpCode,"resultCode":r.resultCode,"message":r.message,"data":params};
-		return toReturn;
-	},*/
-
 	getUserBalance: function (req){
 		return new Promise((resolve,reject) => {
 			utils.logInfo("getUserBalance start")
@@ -40,12 +32,14 @@ module.exports = {
 			var firstOperand = req.body.firstOperand;
 			var secondOperand = req.body.secondOperand;			
 			var transactionId = '';	
+			var executionResult = '';
+			var resultIndex = 0;
 
 			calcModel.validateOperation(operation)
 				.then(op => calcModel.consumeOperation(user,operation))
 				.then(trId => transactionId = trId)
 				.then(ok => calcModel.calculateResult(operation,firstOperand,secondOperand))
-				.then(result => INSERT CODE HERE FOR RESULT MANAGEMENT)
+				.then(result => executionResult = result)
 				.catch(e => calcModel.refundTransaction(user,transactionId))
 				.then(bal => resolve(this.getResponse(2,{"value":"","balance":bal})))
 					

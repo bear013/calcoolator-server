@@ -1,5 +1,5 @@
 require('dotenv').config();
-const User = require('../model/User')
+const UserManager = require('../model/UserManager')
 const jwt = require('jsonwebtoken');
 const SecretJWTKey = process.env.TOKEN_KEY
 const utils = require('../utils/utils')
@@ -21,43 +21,27 @@ module.exports = {
                     reject()
                 }
                 var u = user.user_id
-                utils.logInfo("checkToken decoded user:"+u)
-                utils.logInfo("checkToken OK")
+                utils.logInfo("checkToken decoded user OK:"+u)
                 resolve(u)
             });
         })
     },
 
-    findUser: function(username){
+    findUserId: function(username){
         return new Promise((resolve, reject) => {
-            utils.logInfo('findUser '+username)
-            User.findOne({where: {username: username}})
-            .then(user => {
-                            if (user != null) {
-                                resolve(user.id);
-                            }
-                            else {
-                                reject(0);
-                            }
-                          })
-            .catch(error => {reject(0)})
+            utils.logInfo('findUserId',username)
+            UserManager.findUser(username)
+            .then(user => resolve(user.id))
+            .catch(error => reject(error))
         })
     },
 
     login: function(username,password){
         return new Promise((resolve, reject) => {
-            //utils.logInfo('login',username,password)
-            User.findOne({where: {username: username, password:password}})
-            .then(user => {
-                            if (user != null) {
-                                resolve(user.id);
-                            }
-                            else {
-                                reject(0);
-                            }
-                          })
-            .catch(error => {reject(0)})
+            UserManager.findUser(username)
+            .then(user => resolve(user.password == password))
+            .catch(error => reject(error))
         })
-    }
+    }    
     
 }

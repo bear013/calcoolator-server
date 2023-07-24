@@ -4,25 +4,22 @@ module.exports = {
 
 	addition: function (firstOperand,secondOperand){
 	return new Promise((resolve, reject) => {
-		var opResult = ''
 		var opResult = parseFloat(firstOperand) + parseFloat(secondOperand);
-		resolve({success: true, opResult: opResult});		
+		resolve(opResult);		
     });	
 },
 
 	subtraction: function (firstOperand,secondOperand){
 	return new Promise((resolve, reject) => {
-		var opResult = ''
 		var opResult = parseFloat(firstOperand) - parseFloat(secondOperand);
-		resolve({success: true, opResult: opResult});		
+		resolve(opResult);		
     });
 },
 
 	multiplication: function (firstOperand,secondOperand){
 	return new Promise((resolve, reject) => {
-		var opResult = ''
-		opResult = parseFloat(firstOperand) * parseFloat(secondOperand);
-		resolve({success: true, opResult: opResult});		
+		var opResult = parseFloat(firstOperand) * parseFloat(secondOperand);
+		resolve(opResult);		
     });
 },
 
@@ -30,20 +27,21 @@ module.exports = {
 	return new Promise((resolve, reject) => {
 		var opResult = ''
 		if (parseFloat(secondOperand) == 0)
-			reject({success: false, opResult: opResult})
+			reject("Cannot divide by 0")
 		else
 			opResult = parseFloat(firstOperand) / parseFloat(secondOperand);
-			resolve({success: true, opResult: opResult});		
+			resolve(opResult);		
     });
 },
 
 	randomString: function (firstOperand, secondOperand) {
     return new Promise((resolve, reject) => {
 		var opRes='';
-		genrandom.getRandomNumber(randResult => 
-							{opRes = randResult[0][0];
-							resolve({success: true, opResult: opRes})},
-							rejResult => resolve({success: false, opResult: opRes}));
+		genrandom.getRandomNumber(randResult => {
+				opRes = randResult[0][0];
+				resolve(opRes)
+			},
+			rejResult => resolve("Random number generator not available:" + rejResult));
     });
 },
 
@@ -51,7 +49,7 @@ module.exports = {
 	return new Promise((resolve, reject) => {
 		var opResult = ''
 		opResult = Math.sqrt(parseFloat(firstOperand))
-		resolve({success: true, opResult: opResult});		
+		resolve(opResult);		
     });	
 }
 

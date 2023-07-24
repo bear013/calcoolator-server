@@ -48,12 +48,11 @@ module.exports = {
     },
 
     validateUser: function (req, res, next) {
-        authModel.findUser(req.user).then(result => {
+        authModel.findUserId(req.user).then(result => {
             next();
         }
         ).catch(e => {
-            utils.logInfo(e)
-            utils.logInfo('validateUser failed - user not found')
+            utils.logInfo('validateUser failed - user not found', e)
             response = utils.getResponse(2, {})
             res.status(response.httpCode).json(response)
         })
