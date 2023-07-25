@@ -5,11 +5,20 @@ const calcModel = require("./calculatorModel.js")
 const utils = require('../utils/utils')
 
 module.exports = {
-	responseTemplates: [{"httpCode":200,"resultCode":"0","message":"OK"},
-						{"httpCode":500,"resultCode":"-1","message":"Internal Error"},
-						{"httpCode":401,"resultCode":"-2","message":"Unauthorized"},
-						{"httpCode":403,"resultCode":"-3","message":"Unsupported Operation"},
-						{"httpCode":403,"resultCode":"-4","message":"Insufficient Balance"}],
+	responseTemplates: [
+		{"httpCode":200,"resultCode":"0","message":"OK"},
+		{"httpCode":500,"resultCode":"-1","message":"Internal Error"},
+		{"httpCode":401,"resultCode":"-2","message":"Unauthorized"},
+		{"httpCode":403,"resultCode":"-3","message":"Unsupported Operation"},
+		{"httpCode":403,"resultCode":"-4","message":"Insufficient Balance"}
+	],
+
+	getResponse: function (index,params){
+		utils.logInfo(index,params)
+		var r = this.responseTemplates[index];
+		var toReturn = {"httpCode":r.httpCode,"resultCode":r.resultCode,"message":r.message,"data":params};
+		return toReturn;
+	},
 
 	getUserBalance: function (req){
 		return new Promise((resolve,reject) => {
@@ -33,70 +42,22 @@ module.exports = {
 			var secondOperand = req.body.secondOperand;			
 			var transactionId = '';	
 			var executionResult = '';
-			var resultIndex = 0;
+			var resultIndex = 1;
 
 			calcModel.validateOperation(operation)
-				.then(op => calcModel.consumeOperation(user,operation))
+				.then(() => calcModel.consumeOperation(user,operation))
 				.then(trId => transactionId = trId)
-				.then(ok => calcModel.calculateResult(operation,firstOperand,secondOperand))
-				.then(result => executionResult = result)
-				.catch(e => calcModel.refundTransaction(user,transactionId))
-				.then(bal => resolve(this.getResponse(2,{"value":"","balance":bal})))
-					
-
-			let sql = `SELECT balance FROM users where users.username = ?`;
-
-			var response = {}
-			var responseCode = {}
-
-			database.selectOneRow(database.db, sql, [user])
-			.then(row => {
-				if (row !== undefined) {
-				  var oldBalance = row.balance;
-				  var firstOperand = req.body.firstOperand;
-				  var secondOperand = req.body.secondOperand;				  
-				  if (this.operationMap[req.params.operation] == undefined) {
-					  resolve(this.getResponse(3,{"value":"","balance":oldBalance})) 
-				  } else {
-					  checkBalanceQuery = `select users.balance - operations.cost as new_balance from users,operations where users.username = '${user}' and operations.type='${req.params.operation}'`;
-					  database.selectOneRow(database.db, checkBalanceQuery, [])
-					  .then(newBalance => {
-						  if (newBalance.new_balance >= 0) {
-							  this.operationMap[req.params.operation](firstOperand,secondOperand)
-							  .then(result => {
-								   database.execStatement(database.db,`update users set balance = ? where username= ?`,[newBalance.new_balance,user])
-								   database.execStatement(database.db,`insert into records (operation_id,user_id,amount,user_balance,operation_response,operation_date,active) 
-														select op.id as operation_id, 
-														u.id as user_id,
-														op.cost as amount,
-														u.balance as balance,
-														'OK' as operation_response,
-														datetime('now') as operation_date,
-														1 as active
-														from operations op, users u
-														where op.type = ?
-														and u.username = ?`,[req.params.operation,user])
-									resolve(this.getResponse(0,{"value":result.opResult,"balance":newBalance.new_balance}))	  
-								})
-								.catch(err => resolve(this.getResponse(2,{"value":"","balance":oldBalance})))
-								
-						  } else {
-							  console.log("insufficient Balance")
-							  resolve(this.getResponse(4,{"value":"","balance":oldBalance}))
-						  }
-						  
-					  })
-					  
-				  }		
-				} else {
-					console.log("invalid Token")
-					resolve(this.getResponse(1,{"value":"","balance":"0"}))		
-				}
-			})
-			.catch(error => {
-				console.log(error)
-				resolve(this.getResponse(1,{"value":"","balance":"0"}))
-			});		
+				.then(() => calcModel.calculateResult(operation,firstOperand,secondOperand))
+				.then(result => {
+					executionResult = result;
+					resultIndex = 0;
+				})
+				.catch(e => {
+					resultIndex = e
+					calcModel.refundTransaction(user,transactionId)
+				})
+				.finally(() => calcModel.getBalance(user))
+				.then(bal => resolve(this.getResponse(resultIndex,{"transactionId":transactionId,"balance":bal})))
 		});
 		
 	},

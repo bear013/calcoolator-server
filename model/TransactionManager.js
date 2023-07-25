@@ -1,3 +1,4 @@
+const utils = require('../utils/utils')
 const OperationManager = require('./OperationManager')
 const TransactionTypeManager = require('./TransactionTypeManager')
 const UserManager = require('./UserManager')
@@ -5,13 +6,16 @@ const Transaction = require('./Transaction')
 
 module.exports = {
 
+    errorCodes:{"INTERNAL_ERROR":2,"INSUFFICIENT_BALANCE":4},
+    
     getUserBalance: function(user){
         return new Promise((resolve,reject) => {
             UserManager.findUser(user)
             .then(result => Transaction.sum('amount',{where: {UserId:result.id}}))
             .then(balance => resolve(balance))
             .catch(e => {
-                reject('Error while fetching Balance: ' + e)
+                utils.logInfo('Error while fetching Balance: ' + e)
+                reject(this.errorCodes.INTERNAL_ERROR)
             })
         })
     },
@@ -29,7 +33,10 @@ module.exports = {
                     UserId: results[1].id
                 }))
             .then(result => resolve(result.transactionExternalId))
-            .catch(error => reject("addBalance fail:" + error))            
+            .catch(error => {
+                utils.logInfo("addBalance fail:" + error)
+                reject(this.errorCodes.INTERNAL_ERROR)
+            })            
         })
     },
 
@@ -42,7 +49,7 @@ module.exports = {
                 this.getUserBalance(user)
             ]).then(results => {
                 if (results[3] < results[1].cost) {
-                    reject('Insufficient Balance to consume Operation')
+                    reject(this.errorCodes.INSUFFICIENT_BALANCE)
                 } else {
                 Transaction.create({
                     operation_response: 'OK',
@@ -54,7 +61,10 @@ module.exports = {
                 }
             })
             .then(result => resolve(result.transactionExternalId))
-            .catch(error => reject("consumeOperation fail:" + error))            
+            .catch(error => {
+                utils.logInfo("consumeOperation fail:" + error)
+                reject(this.errorCodes.INTERNAL_ERROR)
+            })            
         })
     }   
 }

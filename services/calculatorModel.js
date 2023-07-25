@@ -6,6 +6,8 @@ const cal = require('../utils/calculator-operations')
 
 module.exports = { 
 
+    errorCodes:{"UNSUPPORTED_OPERATION":3},
+
 	operationMap:{
         'addition':cal.addition,
         'subtraction':cal.subtraction,
@@ -25,8 +27,8 @@ module.exports = {
 
     validateOperation: function(operation){
         return new Promise((resolve,reject) => {
-            if (!this.operationMap.includes(operation)) {
-                reject('Non-Existant Operation') 
+            if (!(operation in this.operationMap)) {
+                reject(this.errorCodes.UNSUPPORTED_OPERATION) 
             } else {
                 resolve(this.operationMap[operation])
             }
@@ -37,7 +39,7 @@ module.exports = {
         return new Promise((resolve,reject) => {
             TransactionManager.consumeOperation(user,operation)
                 .then(transactionId => resolve(transactionId))
-                .catch(error => reject("consumeOperation fail:" + error))            
+                .catch(error => reject(error))            
         })
     },  
     
@@ -45,7 +47,7 @@ module.exports = {
         return new Promise((resolve,reject) => {
             TransactionManager.addBalance(user,amount)
                 .then(transactionId => resolve(transactionId))
-                .catch(error => reject("addBalance fail:" + error))            
+                .catch(error => reject(error))            
         })
     },    
 

@@ -1,4 +1,5 @@
 const User = require('./User')
+const utils = require('../utils/utils')
 
 module.exports = {
     findUser: function(username){
