@@ -51,7 +51,7 @@ module.exports = {
                 if (results[3] < results[1].cost) {
                     reject(this.errorCodes.INSUFFICIENT_BALANCE)
                 } else {
-                Transaction.create({
+                return Transaction.create({
                     operation_response: 'OK',
                     amount: results[0].sign * results[1].cost,
                     TransactionTypeId: results[0].id,
@@ -66,5 +66,17 @@ module.exports = {
                 reject(this.errorCodes.INTERNAL_ERROR)
             })            
         })
-    }   
+    },
+    
+    revertTransaction: function(user,trExternalId){
+        return new Promise((resolve,reject) => {
+            Transaction.destroy({ where: {transactionExternalId: trExternalId,UserId:user}})
+            .then(result => {
+                utils.logInfo("revertTransaction:",result)
+                resolve(0)
+            })
+            .catch(error => reject(-1))
+        })
+
+    }
 }

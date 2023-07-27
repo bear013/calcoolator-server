@@ -53,6 +53,8 @@ module.exports = {
 
     calculateResult: function(operation,firstOperand,secondOperand) {
         return new Promise((resolve,reject) => {
+            if (true) reject(1)
+            else
             this.operationMap[operation](firstOperand,secondOperand)
                 .then(result => resolve(result))
                 .catch(error => reject(error))
@@ -61,7 +63,13 @@ module.exports = {
 
     refundTransaction: function(user,transactionId) {
         return new Promise((resolve,reject) => {
-            resolve(-1)
+            UserManager.findUser(user)
+            .then(userId => TransactionManager.revertTransaction(userId,transactionId))            
+            .then(result => {
+                utils.logInfo("refund transaction:",result)
+                resolve(result)
+            })
+            .catch(error => reject(error))
         })        
     }
     

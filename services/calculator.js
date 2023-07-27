@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const cal = require("../utils/calculator-operations.js");
-const database = require("../database.js");
+//const database = require("../database.js");
 const calcModel = require("./calculatorModel.js")
 const utils = require('../utils/utils')
 
@@ -14,7 +14,7 @@ module.exports = {
 	],
 
 	getResponse: function (index,params){
-		utils.logInfo(index,params)
+		//utils.logInfo(index,params)
 		var r = this.responseTemplates[index];
 		var toReturn = {"httpCode":r.httpCode,"resultCode":r.resultCode,"message":r.message,"data":params};
 		return toReturn;
@@ -49,14 +49,18 @@ module.exports = {
 				.then(trId => transactionId = trId)
 				.then(() => calcModel.calculateResult(operation,firstOperand,secondOperand))
 				.then(result => {
+					utils.logInfo("everything OK",result)
 					executionResult = result;
 					resultIndex = 0;
+					return calcModel.getBalance(user)
 				})
+				.then(bal => resolve(this.getResponse(resultIndex,{"result":executionResult,"transactionId":transactionId,"balance":bal})))
 				.catch(e => {
+					utils.logInfo("error caught:",e)
 					resultIndex = e
-					calcModel.refundTransaction(user,transactionId)
+					return calcModel.refundTransaction(user,transactionId)
 				})
-				.finally(() => calcModel.getBalance(user))
+				.then(() => calcModel.getBalance(user))
 				.then(bal => resolve(this.getResponse(resultIndex,{"transactionId":transactionId,"balance":bal})))
 		});
 		

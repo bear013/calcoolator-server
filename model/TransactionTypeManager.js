@@ -6,7 +6,7 @@ module.exports = {
             TransactionType.findOne({where: {name:type}})
                 .then(r => {
                     if (r != null)
-                        resolve(r.id)
+                        resolve(r)
                     else
                         reject('TransactionType not found')
                 })
