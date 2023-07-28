@@ -10,7 +10,8 @@ module.exports = {
 		{"httpCode":500,"resultCode":"-1","message":"Internal Error"},
 		{"httpCode":401,"resultCode":"-2","message":"Unauthorized"},
 		{"httpCode":403,"resultCode":"-3","message":"Unsupported Operation"},
-		{"httpCode":403,"resultCode":"-4","message":"Insufficient Balance"}
+		{"httpCode":403,"resultCode":"-4","message":"Insufficient Balance"},
+		{"httpCode":404,"resultCode":"-5","message":"Invalid Transaction ID"}
 	],
 
 	getResponse: function (index,params){
@@ -66,27 +67,14 @@ module.exports = {
 		
 	},
 
-	deleteHistoryRecord: `update records set active = 0 where id = ?`,
-
 	removeHistory: function (req) {
-		return new Promise((resolve, reject) => {
-			
-			var token = req.get('x-access-token');
-			var decodedUsername = ''
-			try {
-			    decodedUsername = jwt.verify(token,process.env.TOKEN_KEY);
-			} 
-			catch (err) {		
-				console.log(err)
-				resolve(this.getResponse(2,{}))
-			}
-			
-			params = [req.body.recordId]
-			database.execStatement(database.db,this.deleteHistoryRecord,params)
-			.then(r => resolve(this.getResponse(0,r)))
-			.catch(err => reject(this.getResponse(1,err)))	
-		});
-		
+		return new Promise((resolve, reject) => {	
+			var externalTransactionId = req.body.transactionId
+			var user = req.user
+			calcModel.removeTransactionFromHistory(user,externalTransactionId)
+				.then(r => resolve(this.getResponse(0,{})))
+				.catch(err => resolve(this.getResponse(5,{})))	
+		});	
 	},
 
 	getHistory: function (req) {

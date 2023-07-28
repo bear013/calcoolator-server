@@ -1,7 +1,8 @@
-process.env.TZ = 'America/Argentina/Buenos_Aires';
+//process.env.TZ = 'America/Argentina/Buenos_Aires';
 
 module.exports = {
-    dbLocation: './db/calculator.sqlite'
+    dbLocation: './db/calculator.sqlite',
+    tokenHeaderName: 'x-access-token'
 
 
 }

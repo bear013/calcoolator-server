@@ -78,5 +78,20 @@ module.exports = {
             .catch(error => reject(-1))
         })
 
+    },
+
+    deactivateTransaction: function(userId,externalTransactionId){
+        return new Promise((resolve,reject) => {
+            Transaction.update({active: 0},{where:{UserId:userId,transactionExternalId:externalTransactionId}})
+            .then(r => {
+                utils.logInfo(r)
+                resolve(r)
+            })
+            .catch(e => {
+                utils.logInfo(e)
+                reject(e)
+            })
+        })
+
     }
 }

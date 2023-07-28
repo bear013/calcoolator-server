@@ -49,7 +49,7 @@ app.get('/calculator/v1/history', function (req, res) {
 	.then(result => {res.status(result.httpCode).json(result)})
 })
 
-app.delete('/calculator/v1/deleteRecord', function (req, res) {
+app.delete('/calculator/v2/deleteRecord', function (req, res) {
 	calculator.removeHistory(req)
 	.then(result => {res.status(result.httpCode).json(result)})
 })

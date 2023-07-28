@@ -59,16 +59,28 @@ module.exports = {
         })
     },
 
-    refundTransaction: function(user,transactionId) {
+    refundTransaction: function(user,externalTransactionId) {
         return new Promise((resolve,reject) => {
             UserManager.findUser(user)
-            .then(user => TransactionManager.revertTransaction(user.id,transactionId))            
+            .then(user => TransactionManager.revertTransaction(user.id,externalTransactionId))            
             .then(result => {
                 utils.logInfo("refund transaction:",result)
                 resolve(result)
             })
             .catch(error => reject(error))
         })        
+    },
+
+    removeTransactionFromHistory: function(user,externalTransactionId){
+        return new Promise((resolve,reject) => {
+            UserManager.findUser(user)
+            .then(user => TransactionManager.deactivateTransaction(user.id,externalTransactionId))
+            .then(result => {
+                utils.logInfo("deactivate transaction:",result)
+                resolve(result)
+            })
+            .catch(error => reject(error))
+        })
     }
     
 };

@@ -1,17 +1,14 @@
 const authModel = require('./authModel.js');
 const utils = require('../utils/utils.js')
+const config = require('../config/config')
 
 module.exports = {
     login: function (req) {
         return new Promise((resolve, reject) => {
             var username = req.body.username;
             var password = req.body.password;
-
-            var loginSuccessful = false;
-
             authModel.login(username, password)
                 .then(loginResult => {
-                    var d = new Date();
                     utils.logInfo(`user ${username} just logged in`);
                     var token = authModel.generateToken(username)
                     resolve(utils.getResponse(0, { "token": token }))
@@ -24,7 +21,7 @@ module.exports = {
     },
 
     checkUserTokenPresent: function (req, res, next) {
-        if (req.get('x-access-token')) {
+        if (req.get(config.tokenHeaderName)) {
             next();
         } else {
             response = utils.getResponse(2, {})
@@ -34,7 +31,7 @@ module.exports = {
 
     validateUserToken: function (req, res, next) {
         utils.logInfo("validateUserToken start")
-        const token = req.get('x-access-token');
+        const token = req.get(config.tokenHeaderName);
         authModel.checkToken(token).then(user => {
             utils.logInfo(user)
             utils.logInfo("validateUserToken OK:" + user)
