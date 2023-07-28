@@ -3,6 +3,7 @@
     "chai": "^4.2.0",
     "dotenv": "latest",
     "express": "^4.18.2",
+    "express-validator": "^7.0.1",
     "faker": "^4.1.0",
     "jest": "28.1.0",
     "jsonwebtoken": "latest",
@@ -18,7 +19,7 @@
     "checknodeversion": "node --version",
     "test-model": "jest",
     "test-api": "mocha --recursive './test/*.js' --timeout 25000 --colors",
-    "create-test-model" : "node create-test-model.js",
-    "check-test-model" : "node check-test-model.js"
+    "create-test-model": "node create-test-model.js",
+    "check-test-model": "node check-test-model.js"
   }
 }

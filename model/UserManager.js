@@ -4,7 +4,7 @@ const utils = require('../utils/utils')
 module.exports = {
     findUser: function(username){
         return new Promise((resolve, reject) => {
-            utils.logInfo('findUserId',username)
+            utils.logInfo('findUser',username)
             User.findOne({where: {username: username}})
             .then(user => {
                             if (user != null) {
