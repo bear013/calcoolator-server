@@ -9,4 +9,6 @@ curl http://localhost:8099/calculator/operations/v2/addition/ -H "content-type:a
 curl http://localhost:8099/calculator/v2/balance -H "content-type:application/json" -X GET -H "x-access-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoicGVwZXNpbHZpYSIsImlhdCI6MTY5MDI1MzUyMiwiZXhwIjoxNjkwMjYwNzIyfQ.xqGm-YVnLDZ6ms2f3m89IYwCCDedsq2mDti6ZoHV3F4"
 
 
+fromDate=2023-01-01&untilDate=2023-12-12&minAmount=0.00&maxAmount=9999999.99&LIMIT=10&ORDERBY=amount&ORDERING=DESC
 
+curl http://localhost:8099/calculator/v2/history -H "content-type:application/json" -X GET -H "x-access-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoicGVwZXNpbHZpYSIsImlhdCI6MTY5MDI1MzUyMiwiZXhwIjoxNjkwMjYwNzIyfQ.xqGm-YVnLDZ6ms2f3m89IYwCCDedsq2mDti6ZoHV3F4"

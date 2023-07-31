@@ -1,9 +1,9 @@
+require('dotenv').config();
 const path = require('path');
 const express = require('express');
 const fs = require('fs')
 const calculator = require('./services/calculator.js')
 const auth = require('./services/auth.js')
-require('dotenv').config();
 const https = require('https')
 const WebHostName = process.env.WEBHOSTNAME
 const WebHostPort = process.env.WEBHOSTPORT
@@ -22,14 +22,12 @@ app.use(function (req, res, next) {
     next();
 });
 
-app.use('/calculator/v2/',auth.checkUserTokenPresent,
-						auth.validateUserToken,
-						auth.validateUser);
+app.use('/calculator/v2/',
+	auth.checkUserTokenPresent,
+	auth.validateUserToken,
+	auth.validateUser);
  
-app.use(express.static(path.resolve(__dirname, '/client/public')));
-
 app.post('/auth/v2/login/', function (req, res) {	
-	//utils.logInfo('login attempt - '+req.body.username)
 	auth.login(req)
 	.then(result => {res.status(result.httpCode).json(result)})	
 });
@@ -44,7 +42,7 @@ app.post('/calculator/v2/operations/:operation', function (req, res) {
 	.then(result => {res.status(result.httpCode).json(result)})
 })
 
-app.get('/calculator/v1/history', function (req, res) {
+app.get('/calculator/v2/history', function (req, res) {
 	calculator.getHistory(req)
 	.then(result => {res.status(result.httpCode).json(result)})
 })
@@ -53,10 +51,6 @@ app.delete('/calculator/v2/deleteRecord', function (req, res) {
 	calculator.removeHistory(req)
 	.then(result => {res.status(result.httpCode).json(result)})
 })
-
-app.get('*', (req, res) => {
-  res.sendFile(path.resolve(__dirname, '/client/public', 'index.html'));
-});
 
 if (useHTTPS) {
 	const parameters = {

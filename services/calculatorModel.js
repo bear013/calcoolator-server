@@ -81,6 +81,16 @@ module.exports = {
             })
             .catch(error => reject(error))
         })
+    },
+
+    getTransactionHistory: function(user,queryParams){
+        return new Promise((resolve,reject) => {
+            UserManager.findUser(user)
+            .then(u => TransactionManager.getAllTransactionsForUser(u.id,queryParams))
+            .then(r => resolve(r))
+            .catch(e => reject(e))
+            
+        })
     }
     
 };

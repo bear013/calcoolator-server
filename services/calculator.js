@@ -15,7 +15,6 @@ module.exports = {
 	],
 
 	getResponse: function (index,params){
-		//utils.logInfo(index,params)
 		var r = this.responseTemplates[index];
 		var toReturn = {"httpCode":r.httpCode,"resultCode":r.resultCode,"message":r.message,"data":params};
 		return toReturn;
@@ -79,96 +78,10 @@ module.exports = {
 
 	getHistory: function (req) {
 		return new Promise((resolve, reject) => {
-			var token = req.get('x-access-token');
-			
-			var validToken = false;
-			var decodedUsername = ''
-			try {
-			    decodedUsername = jwt.verify(token,process.env.TOKEN_KEY);
-			} 
-			catch (err) {		
-				console.log(err)
-				resolve(this.getResponse(2,{}))
-			}
-			var resultIndex = 0;
-			var result = {}
-			var totalPages = 0;
-			
-			var untilDate = req.query.untilDate != '' ?  req.query.untilDate: '2030-01-01'
-			var fromDate = req.query.fromDate != '' ?  req.query.fromDate: '2023-01-01'
-			var maxAmount = req.query.maxAmount != '' ?  req.query.maxAmount: 9999999
-			var minAmount = req.query.minAmount != '' ?  req.query.minAmount: 0
-			
-			queryParams = [decodedUsername.user_id,
-							untilDate + ' 23:59:59',
-							fromDate + ' 00:00:00',
-							maxAmount,
-							minAmount,
-							req.query.type,
-							req.query.type,
-							req.query.offset]
-							
-			countQueryParams = [decodedUsername.user_id,
-							untilDate + ' 23:59:59',
-							fromDate + ' 00:00:00',
-							maxAmount,
-							minAmount,
-							req.query.type,
-							req.query.type]
-			
-			var countQuery = `SELECT count(*) as total
-								from records h 
-									left join operations op on h.operation_id = op.id
-									inner join users u on h.user_id = u.id
-								where u.username = ? 
-								and h.operation_date <= ?
-								and h.operation_date >= ?
-								and h.amount <= ?
-								and h.amount >= ?
-								and (op.type = ? or 'any' = ?)
-								and active = 1`
-			
-			var query = `SELECT op.type as type,
-								h.amount as amount,
-								h.user_balance as balance,
-								h.operation_response as response,
-								h.operation_date as op_date, 
-								h.id as record_id
-								from records h 
-									left join operations op on h.operation_id = op.id
-									inner join users u on h.user_id = u.id
-								where u.username = ? 
-								and h.operation_date <= ?
-								and h.operation_date >= ?
-								and h.amount <= ?
-								and h.amount >= ?
-								and (op.type = ? or 'any' = ?)
-								and active = 1 
-								limit 5
-								offset 5 * ?`
-								
-			database.selectOneRow(database.db,countQuery,countQueryParams)
-			.then(r => {totalPages = Math.floor((r.total/5))})
-			.then(r => database.selectAllRows(database.db,query,queryParams))
-			.then(rows => {
-				if (rows !== undefined){
-					result.count = rows.length
-					result.rows = rows
-					result.totalPages = totalPages
-					result.currentPage = req.query.offset
-				} else {
-					result.count = 0
-					result.rows = []
-					result.totalPages = 0
-					result.currentPage = 0
-				}
-				resolve(this.getResponse(resultIndex,result))
-			} )
-			.catch(err => {
-				console.log(err)
-				resultIndex = 1	
-				reject(this.getResponse(resultIndex,result))
-			})
+			utils.logInfo('getHistory')
+			calcModel.getTransactionHistory(req.user,req.query)
+			.then(r => resolve(this.getResponse(0,{r})))
+			.catch(err => resolve(this.getResponse(1,{})))
 		})
 		
 	}

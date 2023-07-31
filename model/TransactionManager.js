@@ -3,6 +3,7 @@ const OperationManager = require('./OperationManager')
 const TransactionTypeManager = require('./TransactionTypeManager')
 const UserManager = require('./UserManager')
 const Transaction = require('./Transaction')
+const { Op } = require('sequelize')
 
 module.exports = {
 
@@ -93,5 +94,32 @@ module.exports = {
             })
         })
 
+    },
+
+    getAllTransactionsForUser: function(userId,queryParams){
+        return new Promise((resolve,reject) => {
+            utils.logInfo('getAllTransactionsForUser:',userId)
+            var limit = queryParams.LIMIT
+            var offset = parseInt(queryParams.PAGE - 1) * parseInt(queryParams.LIMIT)
+            var orderBy = [[queryParams.ORDERBY,queryParams.ORDERING]]
+            var whereConditions = {
+                UserId: userId,
+                active : 1,
+                operation_date: { [Op.between] : [queryParams.fromDate, queryParams.untilDate] },
+                amount: { [Op.between] : [queryParams.minAmount, queryParams.maxAmount] }
+            }
+            Transaction.findAndCountAll({
+                where: whereConditions,
+                limit: limit,
+                offset: offset,
+                order: orderBy
+            })
+            .then(r => resolve(r))
+            .catch(e => {
+                utils.logInfo(e)
+                reject(e)
+            })
+        })
     }
+
 }
