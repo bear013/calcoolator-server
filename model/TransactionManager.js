@@ -109,6 +109,7 @@ module.exports = {
                 amount: { [Op.between] : [queryParams.minAmount, queryParams.maxAmount] }
             }
             Transaction.findAndCountAll({
+                attributes: ['operation_response','operation_date','amount','transactionExternalId'],
                 where: whereConditions,
                 limit: limit,
                 offset: offset,
