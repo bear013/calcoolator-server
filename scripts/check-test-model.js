@@ -1,6 +1,6 @@
-const User = require('./model/User')
-const Operation = require('./model/Operation')
-const Transaction = require('./model/Transaction')
+const User = require('../model/User')
+const Operation = require('../model/Operation')
+const Transaction = require('../model/Transaction')
 
 User.findAll()
 .then(result => result.map(u => console.log(u.id,u.username,u.email)))

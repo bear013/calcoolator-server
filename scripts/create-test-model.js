@@ -1,8 +1,8 @@
-const {sequelize} = require('./model/db')
-const User = require('./model/User')
-const Operation = require('./model/Operation')
-const Transaction = require('./model/Transaction')
-const TransactionType = require('./model/TransactionType')
+const {sequelize} = require('../model/db')
+const User = require('../model/User')
+const Operation = require('../model/Operation')
+const Transaction = require('../model/Transaction')
+const TransactionType = require('../model/TransactionType')
 
 var createdUser;
 var transactionType;

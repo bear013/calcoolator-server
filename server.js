@@ -58,8 +58,8 @@ if (useHTTPS) {
 		cert: cert
 	}
 
-	let key = fs.readFileSync(__dirname+'/host.key','utf-8')
-	let cert = fs.readFileSync(__dirname+'/host.crt','utf-8')
+	let key = fs.readFileSync(__dirname+'/https/host.key','utf-8')
+	let cert = fs.readFileSync(__dirname+'/https/host.crt','utf-8')
 	
 	let server = https.createServer(parameters,app)
 	server.listen(port,()=>{
