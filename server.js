@@ -1,21 +1,15 @@
-require('dotenv').config();
-const path = require('path');
+const config = require('./config/config')
 const express = require('express');
-const fs = require('fs')
 const calculator = require('./services/calculator.js')
 const auth = require('./services/auth.js')
-const https = require('https')
-const WebHostName = process.env.WEBHOSTNAME
-const WebHostPort = process.env.WEBHOSTPORT
-const port = process.env.WEBSERVICEPORT
-const useHTTPS = (process.env.USEHTTPS == 'yes')
-const utils = require('./utils/utils')
+const AccessControlAllowOrigin = config.accessControlAllowOrigin
+const httpsServer = require('./httpsServer')
 
 const app = express()
 app.use(express.json());
 
 app.use(function (req, res, next) {
-    res.setHeader('Access-Control-Allow-Origin', `http://${WebHostName}:${WebHostPort}`);
+    res.setHeader('Access-Control-Allow-Origin', AccessControlAllowOrigin);
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE');
     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type,x-access-token');
     res.setHeader('Access-Control-Allow-Credentials', true);
@@ -52,23 +46,5 @@ app.delete('/calculator/v2/deleteRecord', function (req, res) {
 	.then(result => {res.status(result.httpCode).json(result)})
 })
 
-if (useHTTPS) {
-	const parameters = {
-		key: key,
-		cert: cert
-	}
-
-	let key = fs.readFileSync(__dirname+'/https/host.key','utf-8')
-	let cert = fs.readFileSync(__dirname+'/https/host.crt','utf-8')
-	
-	let server = https.createServer(parameters,app)
-	server.listen(port,()=>{
-	  utils.logInfo(`HTTPS App is up at ${port}`)
-	})
-} else {
-	app.listen(port, () => {
-	  utils.logInfo(`HTTP App is up at ${port}`)
-	})	
-	
-}
+httpsServer.startServer(app)
 

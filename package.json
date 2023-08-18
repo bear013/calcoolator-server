@@ -20,6 +20,7 @@
     "test-model": "jest",
     "test-api": "mocha --recursive './test/*.js' --timeout 25000 --colors",
     "create-test-model": "node ./scripts/create-test-model.js",
-    "check-test-model": "node ./scripts/check-test-model.js"
+    "check-test-model": "node ./scripts/check-test-model.js",
+    "exec-examples": "node ./scripts/api-request-examples.js"
   }
 }
