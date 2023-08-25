@@ -2,6 +2,9 @@ const config = require('../config/config')
 
 /* const request = {method:'POST',headers:{'content-type': 'application/json', 'x-access-token' : '...'},body:'{....}'}*/
 
+console.log(`http://${config.host}:${config.webservicePort}`)
+
+
 function executeRequest(endpoint,request){
     return new Promise((resolve,reject) => {
         fetch(`http://${config.host}:${config.webservicePort}${endpoint}`,
@@ -10,15 +13,16 @@ function executeRequest(endpoint,request){
             headers: request.headers,
             body: request.body
         })
-        .then(response => console.log(response))     
+        .then(response => resolve(response))     
         .catch(error => {
-            console.log(error);
+            //console.log(error);
+            reject(error)
         })
     })
 }
 
-var request = {method:'POST',headers:{'content-type': 'application/json', 'x-access-token' : '...'},body:'{}'}
+var loginRequest = {method:'POST',headers:{'content-type': 'application/json'},body:'{"username":"pepesilvia","password":"carolhr"}'}
 
-executeRequest('/example',request).then(
-    r => console.log(r.response.status,r.response.body)
-)
+executeRequest('/auth/v2/login/',loginRequest)
+.then(r => console.log(r.status,r.text().then(t => console.log(t))))
+.catch(e => console.log(e))
